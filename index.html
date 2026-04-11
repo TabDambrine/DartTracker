@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dart Stats Tracker - PWA pour tracker les statistiques de fléchettes">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>Dart Stats Tracker</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23e74c3c'/><circle cx='96' cy='96' r='60' fill='%231a1a2e'/><circle cx='96' cy='96' r='10' fill='%23e74c3c'/></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23e74c3c'/><circle cx='96' cy='96' r='60' fill='%231a1a2e'/><circle cx='96' cy='96' r='10' fill='%23e74c3c'/></svg>">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="app" class="app">
+        <!-- Loader -->
+        <div id="loader" class="loader" style="display: none;">
+            <div class="spinner"></div>
+        </div>
+
+        <!-- Screen: Menu Principal -->
+        <div id="homeScreen" class="screen active">
+            <header class="app-header">
+                <h1>Dart Stats Tracker</h1>
+                <p class="subtitle">Tracker vos stats de fléchettes</p>
+            </header>
+            <main class="container">
+                <div class="menu-buttons">
+                    <button id="btnNewMatch" class="btn btn-primary btn-large">
+                        <span class="icon">🎯</span>
+                        Nouveau Match
+                    </button>
+                    <button id="btnViewMatches" class="btn btn-secondary btn-large">
+                        <span class="icon">📊</span>
+                        Historique
+                    </button>
+                    <button id="btnManagePlayers" class="btn btn-secondary btn-large">
+                        <span class="icon">👥</span>
+                        Joueurs
+                    </button>
+                    <button id="btnStats" class="btn btn-secondary btn-large">
+                        <span class="icon">📈</span>
+                        Statistiques
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <!-- Screen: Gestion des Joueurs -->
+        <div id="playersScreen" class="screen">
+            <header class="app-header with-back">
+                <button id="btnBackFromPlayers" class="btn-back">←</button>
+                <h2>Gestion des Joueurs</h2>
+            </header>
+            <main class="container">
+                <div class="form-group">
+                    <input id="playerNameInput" type="text" placeholder="Nom du joueur" class="form-input" maxlength="50">
+                    <button id="btnAddPlayer" class="btn btn-success">Ajouter</button>
+                </div>
+                <div id="playersList" class="players-list"></div>
+            </main>
+        </div>
+
+        <!-- Screen: Sélection Joueurs pour Match -->
+        <div id="selectPlayersScreen" class="screen">
+            <header class="app-header with-back">
+                <button id="btnBackFromSelect" class="btn-back">←</button>
+                <h2>Nouveau Match</h2>
+            </header>
+            <main class="container">
+                <div class="form-group">
+                    <label>Sélectionner les joueurs</label>
+                    <div class="players-selection">
+                        <div class="selection-col">
+                            <h3>Joueur 1</h3>
+                            <select id="player1Select" class="form-input">
+                                <option value="">-- Choisir --</option>
+                            </select>
+                        </div>
+                        <div class="selection-col">
+                            <h3>Joueur 2</h3>
+                            <select id="player2Select" class="form-input">
+                                <option value="">-- Choisir --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Type de jeu</label>
+                    <div class="game-type-selection">
+                        <button class="btn btn-game-type active" data-game="501">501</button>
+                        <button class="btn btn-game-type" data-game="301">301</button>
+                    </div>
+                </div>
+
+                <button id="btnStartMatch" class="btn btn-primary btn-block">Démarrer le Match</button>
+            </main>
+        </div>
+
+        <!-- Screen: Jeu en Cours -->
+        <div id="gameScreen" class="screen">
+            <header class="app-header with-back">
+                <button id="btnAbortMatch" class="btn-back">←</button>
+                <h2 id="gameTitle">Match</h2>
+            </header>
+            <main class="container game-container">
+                <!-- Scores des joueurs -->
+                <div class="scores-board">
+                    <div id="player1ScoreBoard" class="score-player">
+                        <div class="player-name" id="player1NameDisplay"></div>
+                        <div class="player-score" id="player1Score">501</div>
+                        <div class="player-throws" id="player1Throws">0 volées</div>
+                    </div>
+                    <div class="vs-separator">VS</div>
+                    <div id="player2ScoreBoard" class="score-player">
+                        <div class="player-name" id="player2NameDisplay"></div>
+                        <div class="player-score" id="player2Score">501</div>
+                        <div class="player-throws" id="player2Throws">0 volées</div>
+                    </div>
+                </div>
+
+                <!-- Formulaire d'entrée des scores -->
+                <div id="throwsForm" class="throws-form">
+                    <h3 id="currentPlayerName"></h3>
+                    <p id="currentPlayerScore" class="score-info"></p>
+                    
+                    <div class="throws-inputs">
+                        <div class="throw-input-group">
+                            <label>Fléchette 1</label>
+                            <input type="number" class="throw-input" min="0" max="60" placeholder="0">
+                        </div>
+                        <div class="throw-input-group">
+                            <label>Fléchette 2</label>
+                            <input type="number" class="throw-input" min="0" max="60" placeholder="0">
+                        </div>
+                        <div class="throw-input-group">
+                            <label>Fléchette 3</label>
+                            <input type="number" class="throw-input" min="0" max="60" placeholder="0">
+                        </div>
+                    </div>
+
+                    <div id="throwError" class="error-message" style="display: none;"></div>
+
+                    <button id="btnSubmitThrows" class="btn btn-success btn-block">Valider la volée</button>
+                </div>
+
+                <!-- Historique des volées -->
+                <div id="throwsHistory" class="throws-history">
+                    <h3>Historique</h3>
+                    <div id="throwsList"></div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Screen: Historique des Matchs -->
+        <div id="matchesScreen" class="screen">
+            <header class="app-header with-back">
+                <button id="btnBackFromMatches" class="btn-back">←</button>
+                <h2>Historique des Matchs</h2>
+            </header>
+            <main class="container">
+                <div id="matchesList" class="matches-list"></div>
+            </main>
+        </div>
+
+        <!-- Screen: Statistiques -->
+        <div id="statsScreen" class="screen">
+            <header class="app-header with-back">
+                <button id="btnBackFromStats" class="btn-back">←</button>
+                <h2>Statistiques</h2>
+            </header>
+            <main class="container">
+                <div id="statsList" class="stats-list"></div>
+            </main>
+        </div>
+
+        <!-- Screen: Détail Match -->
+        <div id="matchDetailScreen" class="screen">
+            <header class="app-header with-back">
+                <button id="btnBackFromMatchDetail" class="btn-back">←</button>
+                <h2>Détail du Match</h2>
+            </header>
+            <main class="container">
+                <div id="matchDetailContent"></div>
+            </main>
+        </div>
+
+        <!-- Modal: Confirmation -->
+        <div id="confirmModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="confirmTitle"></h3>
+                <p id="confirmMessage"></p>
+                <div class="modal-buttons">
+                    <button id="btnConfirmYes" class="btn btn-danger">Oui</button>
+                    <button id="btnConfirmNo" class="btn btn-secondary">Non</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal: Message -->
+        <div id="messageModal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3 id="messageTitle"></h3>
+                <p id="messageContent"></p>
+                <button id="btnMessageClose" class="btn btn-primary">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/rules.js"></script>
+    <script src="js/players.js"></script>
+    <script src="js/games.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('service-worker.js')
+                .then(reg => console.log('Service Worker enregistré'))
+                .catch(err => console.log('Service Worker enregistrement échoué:', err));
+        }
+    </script>
+</body>
+</html>
