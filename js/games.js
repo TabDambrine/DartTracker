@@ -70,7 +70,7 @@ const Games = (() => {
     /**
      * Ajoute une volée et valide les règles
      */
-    const addThrow = (scores) => {
+    const addThrow = (throws) => {
         if (!currentMatch) {
             throw new Error('Aucun match en cours');
         }
@@ -79,17 +79,19 @@ const Games = (() => {
         const currentScore = currentMatch.scores[playerIndex];
         const gameType = currentMatch.gameType;
 
-        // Valider la volée
-        const validation = Rules.validateRound(gameType, currentScore, scores);
+        // Valider la volée (throws est maintenant un tableau d'objets {segment, multiplier})
+        const validation = Rules.validateRound(gameType, currentScore, throws);
 
         if (!validation.valid) {
             return {
                 success: false,
+                valid: false,
                 reason: validation.reason
             };
         }
 
-        // Calculer la nouvelle volée
+        // Calculer les scores
+        const scores = throws.map(Rules.calculateScore);
         const totalScore = scores.reduce((a, b) => a + b, 0);
         const newScore = currentScore - totalScore;
         const roundNumber = currentMatch.throws.filter(t => t.playerIndex === playerIndex).length + 1;
@@ -98,7 +100,7 @@ const Games = (() => {
             id: Storage.generateId(),
             playerIndex,
             round: roundNumber,
-            throw: scores,
+            throw: throws,
             scores,
             roundTotal: totalScore,
             runningTotal: newScore,
@@ -122,8 +124,13 @@ const Games = (() => {
             Players.updateAfterMatch(currentMatch.playerIds[playerIndex], true);
             Players.updateAfterMatch(currentMatch.playerIds[1 - playerIndex], false);
 
+            // Recalculer les statistiques détaillées pour les deux joueurs
+            Stats.updatePlayerStats(currentMatch.playerIds[playerIndex]);
+            Stats.updatePlayerStats(currentMatch.playerIds[1 - playerIndex]);
+
             return {
                 success: true,
+                valid: true,
                 finished: true,
                 winner: getCurrentPlayer()
             };
@@ -134,6 +141,51 @@ const Games = (() => {
 
         return {
             success: true,
+            valid: true,
+            finished: false,
+            throwRecord
+        };
+    };
+
+    /**
+     * Ajoute une volée invalide (erreur du joueur)
+     * Enregistre l'erreur sans modifier le score
+     */
+    const addInvalidThrow = (throws, reason) => {
+        if (!currentMatch) {
+            throw new Error('Aucun match en cours');
+        }
+
+        const playerIndex = currentMatch.currentPlayerIndex;
+        const currentScore = currentMatch.scores[playerIndex];
+        const roundNumber = currentMatch.throws.filter(t => t.playerIndex === playerIndex).length + 1;
+
+        // Calculer les scores pour l'historique
+        const scores = throws.map(Rules.calculateScore);
+        const totalScore = scores.reduce((a, b) => a + b, 0);
+
+        const throwRecord = {
+            id: Storage.generateId(),
+            playerIndex,
+            round: roundNumber,
+            throw: throws,
+            scores,
+            roundTotal: totalScore,
+            runningTotal: currentScore,  // Score ne change pas
+            isValid: false,
+            reason: reason || 'Volée invalide',
+            timestamp: Date.now()
+        };
+
+        // Ajouter à l'historique SANS modifier le score
+        currentMatch.throws.push(throwRecord);
+
+        // Passer au joueur suivant
+        currentMatch.currentPlayerIndex = 1 - currentMatch.currentPlayerIndex;
+
+        return {
+            success: true,
+            valid: false,
             finished: false,
             throwRecord
         };
@@ -203,6 +255,7 @@ const Games = (() => {
         getCurrentPlayer,
         getOtherPlayer,
         addThrow,
+        addInvalidThrow,
         undoLastThrow,
         getMatchHistory,
         getMatchById,

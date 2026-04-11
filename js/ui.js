@@ -197,13 +197,153 @@ const UI = (() => {
         document.getElementById('currentPlayerScore').textContent = 
             `Score actuel: ${match.scores[match.currentPlayerIndex]}`;
 
-        // Effacer les inputs
-        document.querySelectorAll('.throw-input').forEach(input => {
-            input.value = '';
+        // Réinitialiser les sélecteurs de fléchettes
+        resetThrowSelectors();
+
+        // Focus sur le premier segment
+        const firstSegmentSelect = document.querySelector('.throw-selector:nth-child(1) .segment-select');
+        if (firstSegmentSelect) {
+            firstSegmentSelect.focus();
+        }
+    };
+
+    /**
+     * Réinitialise les sélecteurs de fléchettes
+     */
+    const resetThrowSelectors = () => {
+        document.querySelectorAll('.throw-selector').forEach(selector => {
+            selector.querySelector('.segment-select').value = '20';
+            selector.querySelector('.multiplier-select').value = '1';
+            updateThrowDisplay(selector);
         });
-        
-        // Focus sur le premier input
-        document.querySelector('.throw-input').focus();
+        document.getElementById('throwError').style.display = 'none';
+    };
+
+    /**
+     * Met à jour l'affichage d'une fléchette ET vérifie si on peut finir
+     */
+    const updateThrowDisplay = (selectorElement) => {
+        const segment = parseInt(selectorElement.querySelector('.segment-select').value);
+        const multiplierSelect = selectorElement.querySelector('.multiplier-select');
+        let multiplier = parseInt(multiplierSelect.value);
+
+        // Si MISS (-1), forcer le multiplicateur à 1 et désactiver
+        if (segment === -1) {
+            multiplier = 1;
+            multiplierSelect.value = '1';
+            multiplierSelect.disabled = true;
+        } else {
+            multiplierSelect.disabled = false;
+        }
+
+        const score = Rules.calculateScore({ segment, multiplier });
+        const display = Rules.formatThrow({ segment, multiplier });
+
+        selectorElement.querySelector('.throw-display').textContent = `${display}`;
+        selectorElement.dataset.score = score;
+
+        // Vérifier si on peut finir avec moins de 3 fléchettes
+        checkForPartialFinish();
+    };
+
+    /**
+     * Vérifie si une volée partielle peut finir le match
+     */
+    const checkForPartialFinish = () => {
+        const match = Games.getCurrentMatch();
+        if (!match) return;
+
+        const playerIndex = match.currentPlayerIndex;
+        const currentScore = match.scores[playerIndex];
+
+        // Collecter les fléchettes remplies
+        const throws = [];
+        const selectors = document.querySelectorAll('.throw-selector');
+
+        for (let selector of selectors) {
+            const segment = parseInt(selector.querySelector('.segment-select').value);
+            const multiplier = parseInt(selector.querySelector('.multiplier-select').value);
+
+            throws.push({ segment, multiplier });
+
+            // Vérifier la validation partielle
+            const validation = Rules.validatePartialFinish(match.gameType, currentScore, throws);
+
+            if (validation.finished) {
+                // On peut finir ici!
+                document.getElementById('btnSubmitThrows').style.display = 'none';
+                document.getElementById('btnSubmitPartialFinish').style.display = 'block';
+                return;
+            } else if (!validation.valid) {
+                // La volée jusqu'à présent est invalide
+                break;
+            }
+        }
+
+        // Pas de finish partiel détecté
+        document.getElementById('btnSubmitThrows').style.display = 'block';
+        document.getElementById('btnSubmitPartialFinish').style.display = 'none';
+    };
+
+    /**
+     * Récupère les 3 fléchettes du formulaire
+     */
+    const getThrowsFromForm = () => {
+        const throws = [];
+        document.querySelectorAll('.throw-selector').forEach((selector, index) => {
+            const segment = parseInt(selector.querySelector('.segment-select').value);
+            const multiplier = parseInt(selector.querySelector('.multiplier-select').value);
+            throws.push({ segment, multiplier });
+        });
+        return throws;
+    };
+
+    /**
+     * Affiche un message d'erreur de volée
+     */
+    const showThrowError = (message) => {
+        const errorDiv = document.getElementById('throwError');
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 3000);
+    };
+
+    /**
+     * Affiche les options de validation (valide ou erreur)
+     */
+    const showValidationOptions = (message) => {
+        return new Promise((resolve) => {
+            const modal = document.getElementById('validationModal');
+            if (!modal) {
+                resolve('error');
+                return;
+            }
+
+            document.getElementById('validationMessage').textContent = message;
+
+            const handleValid = () => {
+                cleanup();
+                resolve('valid');
+            };
+
+            const handleError = () => {
+                cleanup();
+                resolve('error');
+            };
+
+            const cleanup = () => {
+                modal.style.display = 'none';
+                document.getElementById('btnValidate').removeEventListener('click', handleValid);
+                document.getElementById('btnMarkError').removeEventListener('click', handleError);
+            };
+
+            document.getElementById('btnValidate').addEventListener('click', handleValid);
+            document.getElementById('btnMarkError').addEventListener('click', handleError);
+
+            modal.style.display = 'flex';
+        });
     };
 
     /**
@@ -235,11 +375,17 @@ const UI = (() => {
                     <h4>${player.name}</h4>`;
 
                 playerThrows.forEach(t => {
-                    html += `<div class="throw-row">
+                    // Formater chaque fléchette
+                    const throwsDisplay = t.throw.map(th => Rules.formatThrow(th)).join(' + ');
+                    const rowClass = t.isValid ? '' : 'invalid-throw';
+                    const invalidBadge = t.isValid ? '' : `<span class="invalid-badge" title="${t.reason}">❌</span>`;
+
+                    html += `<div class="throw-row ${rowClass}">
                         <span class="round-num">Volée ${t.round}</span>
-                        <span class="scores">${t.throw.join(' + ')}</span>
+                        <span class="scores">${throwsDisplay}</span>
                         <span class="total">${t.roundTotal} pts</span>
                         <span class="running">${t.runningTotal}</span>
+                        ${invalidBadge}
                     </div>`;
                 });
 
@@ -248,18 +394,6 @@ const UI = (() => {
         }
 
         container.innerHTML = html;
-    };
-
-    /**
-     * Affiche une erreur de volée
-     */
-    const showThrowError = (message) => {
-        const errorDiv = document.getElementById('throwError');
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 3000);
     };
 
     /**
@@ -326,7 +460,7 @@ const UI = (() => {
         const winner = Players.getById(match.winner);
 
         const container = document.getElementById('matchDetailContent');
-        
+
         let throwsHtml = '';
         for (let i = 0; i < 2; i++) {
             const throws = match.throws.filter(t => t.playerIndex === i);
@@ -334,11 +468,16 @@ const UI = (() => {
                 <h4>${Players.getById(match.playerIds[i]).name}</h4>`;
 
             throws.forEach(t => {
-                throwsHtml += `<div class="throw-row">
+                const throwsDisplay = t.throw.map(th => Rules.formatThrow(th)).join(' + ');
+                const rowClass = t.isValid ? '' : 'invalid-throw';
+                const invalidBadge = t.isValid ? '' : `<span class="invalid-badge" title="${t.reason}">❌</span>`;
+
+                throwsHtml += `<div class="throw-row ${rowClass}">
                     <span class="round-num">Volée ${t.round}</span>
-                    <span class="scores">${t.throw.join(' + ')}</span>
+                    <span class="scores">${throwsDisplay}</span>
                     <span class="total">${t.roundTotal} pts</span>
                     <span class="running">${t.runningTotal}</span>
+                    ${invalidBadge}
                 </div>`;
             });
 
@@ -372,27 +511,91 @@ const UI = (() => {
         }
 
         container.innerHTML = players.map(player => {
-            const stats = Players.getStats(player.id);
+            const formattedStats = Stats.getFormattedStats(player.id);
+            if (!formattedStats) return '';
+
+            const stats = formattedStats.displayStats;
+
+            // Formater les coups préférés
+            let topThrowsHtml = '<div class="top-throws">';
+            if (stats.topThrows.length === 0) {
+                topThrowsHtml += '<p class="no-data">Pas de données</p>';
+            } else {
+                topThrowsHtml += stats.topThrows.slice(0, 5).map((t, i) => {
+                    const throwDisplay = Rules.formatThrow({ segment: t.segment, multiplier: t.multiplier });
+                    return `<div class="throw-stat">
+                        <span class="rank">${i + 1}.</span>
+                        <span class="throw-name">${throwDisplay}</span>
+                        <span class="count">${t.count}x (${t.percentage.toFixed(1)}%)</span>
+                    </div>`;
+                }).join('');
+            }
+            topThrowsHtml += '</div>';
+
+            // Formater le double préféré
+            let preferredDoubleHtml = '<div class="preferred-double">';
+            if (stats.preferredFinishingDouble) {
+                const doubleDisplay = Rules.formatThrow({ 
+                    segment: stats.preferredFinishingDouble.segment, 
+                    multiplier: 2 
+                });
+                preferredDoubleHtml += `
+                    <div class="double-info">
+                        <span class="double-name">${doubleDisplay}</span>
+                        <span class="double-stats">${stats.preferredFinishingDouble.count}x (${stats.preferredFinishingDouble.percentage.toFixed(1)}%)</span>
+                    </div>
+                `;
+            } else {
+                preferredDoubleHtml += '<p class="no-data">Pas de finish réalisé</p>';
+            }
+            preferredDoubleHtml += '</div>';
+
             return `
-                <div class="stats-card">
+                <div class="stats-card detailed-stats">
                     <h3>${player.name}</h3>
-                    <div class="stats-grid">
-                        <div class="stat">
-                            <div class="stat-label">Matchs joués</div>
-                            <div class="stat-value">${stats.totalMatches}</div>
+
+                    <!-- Stats Basiques -->
+                    <div class="stats-section">
+                        <h4>Vue Synthétique</h4>
+                        <div class="stats-grid">
+                            <div class="stat">
+                                <div class="stat-label">Matchs</div>
+                                <div class="stat-value">${stats.matchesInfo}</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Taux de victoire</div>
+                                <div class="stat-value">${stats.winRate}%</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Moyenne par volée</div>
+                                <div class="stat-value">${stats.averageRoundScore} pts</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-label">Finish au double</div>
+                                <div class="stat-value">${stats.finishDoubleSuccessRate}%</div>
+                            </div>
                         </div>
-                        <div class="stat">
-                            <div class="stat-label">Victoires</div>
-                            <div class="stat-value">${stats.wins}</div>
+                    </div>
+
+                    <!-- Meilleur Score de Finish -->
+                    <div class="stats-section">
+                        <h4>🎯 Meilleur Score de Finish</h4>
+                        <div class="best-score">
+                            <span class="score-value">${stats.bestFinishingScore}</span>
+                            <span class="score-label">points</span>
                         </div>
-                        <div class="stat">
-                            <div class="stat-label">Défaites</div>
-                            <div class="stat-value">${stats.losses}</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-label">Taux de victoire</div>
-                            <div class="stat-value">${stats.winRate}%</div>
-                        </div>
+                    </div>
+
+                    <!-- Top 5 Coups Préférés -->
+                    <div class="stats-section">
+                        <h4>📊 Top 5 Coups Préférés</h4>
+                        ${topThrowsHtml}
+                    </div>
+
+                    <!-- Double Préféré pour Finish -->
+                    <div class="stats-section">
+                        <h4>🎯 Double Préféré pour Finish</h4>
+                        ${preferredDoubleHtml}
                     </div>
                 </div>
             `;
@@ -406,11 +609,15 @@ const UI = (() => {
         showError,
         showSuccess,
         showThrowError,
+        showValidationOptions,
         clearPlayerForm,
         renderPlayersList,
         renderSelectPlayerOptions,
         updateScoresBoard,
         updateThrowsForm,
+        resetThrowSelectors,
+        updateThrowDisplay,
+        getThrowsFromForm,
         updateThrowsHistory,
         renderMatchesList,
         renderMatchDetail,

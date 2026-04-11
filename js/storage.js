@@ -69,7 +69,11 @@ const Storage = (() => {
                 totalMatches: 0,
                 wins: 0,
                 losses: 0,
-                averageScore: 0
+                averageRoundScore: 0,
+                finishDoubleSuccessRate: 0,
+                bestFinishingScore: 0,
+                topThrows: [],
+                preferredFinishingDouble: null
             }
         };
         players.push(newPlayer);

@@ -19,28 +19,13 @@ const ASSETS = [
 
 // Installation
 self.addEventListener('install', event => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then(cache => {
-            return cache.addAll(ASSETS).catch(() => {
-                // Continuer même si certains assets ne peuvent pas être cachés
-                console.log('Certains assets n\'ont pas pu être cachés');
-            });
-        })
-    );
+    console.log('[SW] Installation...');
     self.skipWaiting();
 });
 
 // Activation
 self.addEventListener('activate', event => {
-    event.waitUntil(
-        caches.keys().then(names => {
-            return Promise.all(
-                names
-                    .filter(name => name !== CACHE_NAME)
-                    .map(name => caches.delete(name))
-            );
-        })
-    );
+    console.log('[SW] Activation...');
     self.clients.claim();
 });
 
@@ -51,22 +36,22 @@ self.addEventListener('fetch', event => {
         event.respondWith(
             caches.match(event.request).then(response => {
                 if (response) {
-                    // Retourner du cache
                     return response;
                 }
 
-                // Sinon, tenter la requête réseau
+                // En local (file://), ne pas essayer de fetch
+                if (event.request.url.startsWith('file://')) {
+                    return response || new Response('Not found', { status: 404 });
+                }
+
+                // En HTTP/HTTPS, tenter la requête réseau
                 return fetch(event.request)
                     .then(response => {
-                        // Ne pas cacher les réponses non-2xx
                         if (!response || response.status !== 200 || response.type === 'error') {
                             return response;
                         }
 
-                        // Cloner la réponse
                         const responseToCache = response.clone();
-
-                        // Cacher la nouvelle réponse
                         caches.open(CACHE_NAME).then(cache => {
                             cache.put(event.request, responseToCache);
                         });
@@ -75,9 +60,12 @@ self.addEventListener('fetch', event => {
                     })
                     .catch(() => {
                         // Retourner une réponse offline si disponible
-                        return caches.match('/index.html');
+                        return caches.match('/index.html').then(response => {
+                            return response || new Response('Offline', { status: 503 });
+                        });
                     });
             })
         );
     }
 });
+

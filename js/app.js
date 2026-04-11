@@ -21,6 +21,15 @@ const App = (() => {
         attachMatchesScreenEvents();
         attachStatsScreenEvents();
 
+        // Attacher l'event du bouton retour detail match
+        const btnBackFromMatchDetail = document.getElementById('btnBackFromMatchDetail');
+        if (btnBackFromMatchDetail) {
+            btnBackFromMatchDetail.addEventListener('click', () => {
+                UI.renderMatchesList();
+                UI.showScreen('matchesScreen');
+            });
+        }
+
         console.log('Dart Stats Tracker initialisé');
     };
 
@@ -139,7 +148,11 @@ const App = (() => {
      * Events écran de jeu
      */
     const attachGameScreenEvents = () => {
+        // Soumission normale (3 fléchettes)
         document.getElementById('btnSubmitThrows').addEventListener('click', submitThrows);
+
+        // Soumission du finish partiel
+        document.getElementById('btnSubmitPartialFinish').addEventListener('click', submitPartialFinish);
 
         document.getElementById('btnAbortMatch').addEventListener('click', async () => {
             const confirmed = await UI.showConfirmModal(
@@ -153,15 +166,32 @@ const App = (() => {
             }
         });
 
-        // Navigation au clavier pour les inputs
-        document.querySelectorAll('.throw-input').forEach((input, index) => {
-            input.addEventListener('keypress', (e) => {
+        // Events pour les sélecteurs de fléchettes
+        document.querySelectorAll('.throw-selector').forEach((selector, index) => {
+            selector.querySelector('.segment-select').addEventListener('change', (e) => {
+                UI.updateThrowDisplay(selector);
+                // Auto-focus vers le multiplicateur
+                setTimeout(() => selector.querySelector('.multiplier-select').focus(), 0);
+            });
+
+            selector.querySelector('.multiplier-select').addEventListener('change', (e) => {
+                UI.updateThrowDisplay(selector);
+                // Auto-focus vers le prochain sélecteur ou le bouton
+                if (index < 2) {
+                    setTimeout(() => {
+                        document.querySelectorAll('.throw-selector')[index + 1]
+                            .querySelector('.segment-select').focus();
+                    }, 0);
+                } else {
+                    setTimeout(() => document.getElementById('btnSubmitThrows').focus(), 0);
+                }
+            });
+
+            // Tab navigation
+            selector.querySelector('.multiplier-select').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
-                    if (index < 2) {
-                        document.querySelectorAll('.throw-input')[index + 1].focus();
-                    } else {
-                        submitThrows();
-                    }
+                    e.preventDefault();
+                    submitThrows();
                 }
             });
         });
@@ -171,17 +201,27 @@ const App = (() => {
      * Soumet une volée
      */
     const submitThrows = async () => {
-        const inputs = document.querySelectorAll('.throw-input');
-        const scores = Array.from(inputs).map(input => {
-            const value = parseInt(input.value) || 0;
-            return value;
-        });
-
         try {
-            const result = Games.addThrow(scores);
+            const throws = UI.getThrowsFromForm();
+
+            const result = Games.addThrow(throws);
 
             if (!result.success) {
-                UI.showThrowError(result.reason);
+                // La volée est invalide - proposer à l'utilisateur
+                const choice = await UI.showValidationOptions(
+                    `⚠️ ${result.reason}\n\nValider quand même comme erreur du joueur ?`
+                );
+
+                if (choice === 'valid') {
+                    // Cliquez sur "Valider quand même" → enregistrer comme erreur
+                    const errorResult = Games.addInvalidThrow(throws, result.reason);
+                    UI.updateScoresBoard();
+                    UI.updateThrowsHistory();
+                    UI.updateThrowsForm();
+                } else {
+                    // Cliquez sur "Corriger" → abandonner et laisser corriger
+                    UI.showThrowError('Veuillez corriger la volée');
+                }
                 return;
             }
 
@@ -199,6 +239,65 @@ const App = (() => {
             } else {
                 UI.updateThrowsForm();
             }
+        } catch (err) {
+            UI.showThrowError(err.message);
+        }
+    };
+
+    /**
+     * Soumet une volée partielle qui termine le match
+     */
+    const submitPartialFinish = async () => {
+        try {
+            const match = Games.getCurrentMatch();
+            if (!match) return;
+
+            const playerIndex = match.currentPlayerIndex;
+            const currentScore = match.scores[playerIndex];
+
+            // Collecter les fléchettes jusqu'à trouver le finish
+            const partialThrows = [];
+            const selectors = document.querySelectorAll('.throw-selector');
+
+            for (let selector of selectors) {
+                const segment = parseInt(selector.querySelector('.segment-select').value);
+                const multiplier = parseInt(selector.querySelector('.multiplier-select').value);
+
+                partialThrows.push({ segment, multiplier });
+
+                // Vérifier la validation partielle
+                const validation = Rules.validatePartialFinish(match.gameType, currentScore, partialThrows);
+
+                if (validation.finished) {
+                    // On a trouvé le finish - utiliser seulement ces fléchettes
+                    const result = Games.addThrow(partialThrows);
+
+                    if (!result.success) {
+                        UI.showThrowError(`Erreur: ${result.reason}`);
+                        return;
+                    }
+
+                    UI.updateScoresBoard();
+                    UI.updateThrowsHistory();
+
+                    if (result.finished) {
+                        const winner = result.winner;
+                        await UI.showMessageModal(
+                            '🎉 Match Terminé!',
+                            `${winner.name} a remporté le match!`
+                        );
+                        Games.clearCurrentMatch();
+                        UI.showScreen('homeScreen');
+                    }
+                    return;
+                } else if (!validation.valid) {
+                    // Les fléchettes jusqu'ici ne sont pas valides
+                    UI.showThrowError('Erreur: volée invalide');
+                    return;
+                }
+            }
+
+            UI.showThrowError('Erreur: impossible de terminer le match');
         } catch (err) {
             UI.showThrowError(err.message);
         }
@@ -229,12 +328,6 @@ const App = (() => {
         UI.renderMatchDetail(matchId);
         UI.showScreen('matchDetailScreen');
     };
-
-    // Attacher l'event du bouton retour detail
-    document.getElementById('btnBackFromMatchDetail').addEventListener('click', () => {
-        UI.renderMatchesList();
-        UI.showScreen('matchesScreen');
-    });
 
     return {
         init,

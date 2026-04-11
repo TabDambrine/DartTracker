@@ -57,7 +57,8 @@ const Players = (() => {
     };
 
     /**
-     * Mets à jour les stats après un match
+     * Mets à jour les stats basiques après un match
+     * Les stats détaillées sont recalculées par le module Stats
      */
     const updateAfterMatch = (playerId, won) => {
         const player = getById(playerId);
@@ -71,29 +72,19 @@ const Players = (() => {
             stats.losses += 1;
         }
 
-        // Recalculer la moyenne
-        stats.averageScore = stats.wins / stats.totalMatches;
-
         Storage.updatePlayerStats(playerId, stats);
     };
 
     /**
-     * Calcule les stats globales d'un joueur
+     * Calcule les stats globales d'un joueur (appelle le module Stats pour les détails)
      */
     const getStats = (playerId) => {
-        const player = getById(playerId);
-        if (!player) return null;
+        if (!Stats) {
+            console.warn('Module Stats non disponible');
+            return null;
+        }
 
-        const matches = Storage.getPlayerMatches(playerId);
-        const wins = matches.filter(m => m.winner === playerId).length;
-
-        return {
-            player,
-            totalMatches: matches.length,
-            wins,
-            losses: matches.length - wins,
-            winRate: matches.length > 0 ? ((wins / matches.length) * 100).toFixed(1) : 0
-        };
+        return Stats.getFormattedStats(playerId);
     };
 
     return {
