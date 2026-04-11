@@ -1,0 +1,52 @@
+/**
+ * Dart Stats Tracker - Players Screen
+ * Gestion des joueurs (création, suppression, sélection)
+ */
+
+/* Players Management */
+
+.players-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+}
+
+.player-info h4 {
+    margin-bottom: var(--spacing-xs);
+    color: var(--text-dark);
+}
+
+.player-info small {
+    color: var(--text-light);
+    font-size: 0.875rem;
+}
+
+/* Player Selection */
+
+.players-selection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.selection-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.selection-col h3 {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-dark);
+}

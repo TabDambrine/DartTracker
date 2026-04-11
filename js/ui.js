@@ -224,6 +224,9 @@ const UI = (() => {
         document.getElementById('currentPlayerScore').textContent = 
             `Score actuel: ${match.scores[match.currentPlayerIndex]}`;
 
+        // Afficher la suggestion de finition si le score <= 170
+        updateFinishSuggestion(player.id, match.scores[match.currentPlayerIndex]);
+
         // Réinitialiser les sélecteurs de fléchettes
         resetThrowSelectors();
 
@@ -282,6 +285,12 @@ const UI = (() => {
 
         const playerIndex = match.currentPlayerIndex;
         const currentScore = match.scores[playerIndex];
+        const player = Games.getCurrentPlayer();
+
+        // Mettre à jour la suggestion de finition
+        if (player) {
+            updateFinishSuggestion(player.id, currentScore);
+        }
 
         // Collecter les fléchettes remplies
         const throws = [];
@@ -644,6 +653,41 @@ const UI = (() => {
         }).join('');
     };
 
+    /**
+     * Met à jour et affiche la suggestion de finition
+     */
+    const updateFinishSuggestion = (playerId, currentScore) => {
+        const suggestionEl = document.getElementById('finishSuggestion');
+
+        if (!suggestionEl) return;
+
+        // Score > 170 ne peut pas être fini en une volée
+        if (currentScore > 170 || currentScore < 2) {
+            suggestionEl.style.display = 'none';
+            return;
+        }
+
+        const suggestion = Finishes.getFinishSuggestion(currentScore, playerId);
+
+        if (!suggestion) {
+            suggestionEl.style.display = 'none';
+            return;
+        }
+
+        // Construire le HTML de la suggestion
+        let html = `<div class="finish-suggestion-content">`;
+        html += `<strong>💡 Suggestion de finish:</strong> ${suggestion.formatted}`;
+
+        if (suggestion.usedPreferredDouble) {
+            html += ` <span class="preferred-double-badge">✓ Double favori</span>`;
+        }
+
+        html += `</div>`;
+
+        suggestionEl.innerHTML = html;
+        suggestionEl.style.display = 'block';
+    };
+
     return {
         showScreen,
         showConfirmModal,
@@ -664,6 +708,7 @@ const UI = (() => {
         renderMatchesList,
         renderMatchDetail,
         renderStats,
-        getPlayerName
+        getPlayerName,
+        updateFinishSuggestion
     };
 })();

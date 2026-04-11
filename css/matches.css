@@ -1,0 +1,125 @@
+/**
+ * Dart Stats Tracker - Matches Screen
+ * Historique des matchs et affichage du détail d'un match
+ */
+
+/* Matches List */
+
+.matches-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.match-item {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 4px solid var(--primary-color);
+}
+
+.match-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.match-players {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    font-weight: 600;
+}
+
+.match-players .player {
+    flex: 1;
+    padding: var(--spacing-sm);
+    text-align: center;
+    border-radius: var(--radius-md);
+    background: var(--light-bg);
+}
+
+.match-players .player.winner {
+    background: #d5f4e6;
+    color: var(--success-color);
+    font-weight: 700;
+}
+
+.match-players .vs {
+    color: var(--text-light);
+}
+
+.match-meta {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    font-size: 0.875rem;
+    color: var(--text-light);
+}
+
+.game-type {
+    background: var(--secondary-color);
+    color: white;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+
+.date {
+    color: var(--text-light);
+}
+
+.winner {
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+/* Match Detail */
+
+.match-detail {
+    background: white;
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+}
+
+.match-detail h3 {
+    margin-bottom: var(--spacing-md);
+    color: var(--text-dark);
+    text-align: center;
+    font-size: 1.25rem;
+}
+
+.game-info {
+    text-align: center;
+    color: var(--text-light);
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.throws-detailed {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.throws-detailed .player-throws {
+    margin-bottom: 0;
+}
+
+.player-throws {
+    margin-bottom: var(--spacing-md);
+}
+
+.player-throws h4 {
+    font-size: 0.95rem;
+    color: var(--primary-color);
+    margin-bottom: var(--spacing-sm);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--border-color);
+}

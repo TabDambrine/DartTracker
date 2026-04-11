@@ -8,9 +8,24 @@
     <title>Dart Stats Tracker</title>
     <!-- PWA Manifest (chargé uniquement en HTTP/HTTPS) -->
     <link rel="manifest" href="manifest.json" id="manifest-link">
-    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23e74c3c'/><circle cx='96' cy='96' r='60' fill='%231a1a2e'/><circle cx='96' cy='96' r='10' fill='%23e74c3c'/></svg>">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><circle cx='96' cy='96' r='80' fill='%23e74c3c'/><circle cx='96' cy='96' r='60' fill='%231a1a2e'/><circle cx='96' cy='96' r='10' fill='%23e74c3c'/></svg>">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
+     <!-- CSS Modules (ordre d'importance) -->
+    <!-- 1. Variables et resets globaux -->
+    <link rel="stylesheet" href="css/variables.css">
+    <!-- 2. Layout principal (grille, screens, header) -->
+    <link rel="stylesheet" href="css/layout.css">
+    <!-- 3. Composants réutilisables (boutons, formulaires) -->
+    <link rel="stylesheet" href="css/components.css">
+    <!-- 4. Modules spécifiques par écran -->
+    <link rel="stylesheet" href="css/players.css">
+    <link rel="stylesheet" href="css/game.css">
+    <link rel="stylesheet" href="css/matches.css">
+    <link rel="stylesheet" href="css/stats.css">
+    <!-- 5. Utilitaires (modales, loader, états vides) -->
+    <link rel="stylesheet" href="css/utils.css">
+    <!-- 6. Responsive et accessibilité (doit être en dernier) -->
+    <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
     <div id="app" class="app">
@@ -133,6 +148,7 @@
                 <div id="throwsForm" class="throws-form">
                     <h3 id="currentPlayerName"></h3>
                     <p id="currentPlayerScore" class="score-info"></p>
+                    <div id="finishSuggestion" class="finish-suggestion" style="display: none;"></div>
 
                     <div class="throws-selectors">
                         <div class="throw-selector">
@@ -336,6 +352,7 @@
     <script src="js/players.js"></script>
     <script src="js/games.js"></script>
     <script src="js/stats.js"></script>
+    <script src="js/finishes.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
 
