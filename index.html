@@ -95,6 +95,13 @@
                     </div>
                 </div>
 
+                <!-- Limite de tours -->
+                <div class="form-group">
+                    <label for="roundLimitInput">Limite de tours (vide = pas de limite)</label>
+                    <input id="roundLimitInput" type="number" placeholder="Ex: 15 pour 501, 10 pour 301" class="form-input" min="1" max="100">
+                    <small>Par défaut: 15 pour 501, 10 pour 301</small>
+                </div>
+
                 <button id="btnStartMatch" class="btn btn-primary btn-block">Démarrer le Match</button>
             </main>
         </div>
@@ -104,6 +111,7 @@
             <header class="app-header with-back">
                 <button id="btnAbortMatch" class="btn-back">←</button>
                 <h2 id="gameTitle">Match</h2>
+                <div id="roundInfo" class="round-info"></div>
             </header>
             <main class="container game-container">
                 <!-- Scores des joueurs -->

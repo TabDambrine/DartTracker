@@ -179,20 +179,36 @@ const UI = (() => {
         const player1 = Players.getById(match.playerIds[0]);
         const player2 = Players.getById(match.playerIds[1]);
 
-        document.getElementById('player1NameDisplay').textContent = player1.name;
+        document.getElementById('player1NameDisplay').textContent = getPlayerName(match.playerIds[0]);
         document.getElementById('player1Score').textContent = match.scores[0];
         document.getElementById('player1Throws').textContent = 
             `${Games.getPlayerThrows(0).length} volées`;
 
-        document.getElementById('player2NameDisplay').textContent = player2.name;
-        document.getElementById('player2Score').textContent = match.scores[1];
-        document.getElementById('player2Throws').textContent = 
-            `${Games.getPlayerThrows(1).length} volées`;
+        if (!match.isTraining) {
+            document.getElementById('player2NameDisplay').textContent = getPlayerName(match.playerIds[1]);
+            document.getElementById('player2Score').textContent = match.scores[1];
+            document.getElementById('player2Throws').textContent = 
+                `${Games.getPlayerThrows(1).length} volées`;
+        }
+
+        // Afficher le tour courant et la limite
+        const roundInfo = document.getElementById('roundInfo');
+        if (roundInfo) {
+            if (match.isDNF) {
+                roundInfo.textContent = '❌ DNF (Did Not Finish)';
+            } else if (match.roundLimit) {
+                roundInfo.textContent = `Tour ${match.currentRound} / ${match.roundLimit}`;
+            } else {
+                roundInfo.textContent = `Tour ${match.currentRound}`;
+            }
+        }
 
         // Highlighter le joueur actuel
         const activeClass = 'active';
         document.getElementById('player1ScoreBoard').classList.toggle(activeClass, match.currentPlayerIndex === 0);
-        document.getElementById('player2ScoreBoard').classList.toggle(activeClass, match.currentPlayerIndex === 1);
+        if (!match.isTraining) {
+            document.getElementById('player2ScoreBoard').classList.toggle(activeClass, match.currentPlayerIndex === 1);
+        }
     };
 
     /**
@@ -422,25 +438,33 @@ const UI = (() => {
         container.innerHTML = matches.slice().reverse().map(match => {
             const player1Name = getPlayerName(match.playerIds[0]);
             const player2Name = getPlayerName(match.playerIds[1]);
-            const winnerName = getPlayerName(match.winner);
             const date = new Date(match.startDate).toLocaleDateString('fr-FR');
+
+            // Affichage du résultat
+            let resultDisplay = '';
+            if (match.isDNF) {
+                resultDisplay = 'DNF (Did Not Finish)';
+            } else {
+                const winnerName = getPlayerName(match.winner);
+                resultDisplay = `Gagnant: ${winnerName}`;
+            }
 
             return `
                 <div class="match-item" data-match-id="${match.id}">
                     <div class="match-info">
                         <div class="match-players">
-                            <span class="player ${match.winner === match.playerIds[0] ? 'winner' : ''}">
+                            <span class="player ${!match.isDNF && match.winner === match.playerIds[0] ? 'winner' : ''}">
                                 ${player1Name}
                             </span>
                             <span class="vs">VS</span>
-                            <span class="player ${match.winner === match.playerIds[1] ? 'winner' : ''}">
+                            <span class="player ${!match.isDNF && match.winner === match.playerIds[1] ? 'winner' : ''}">
                                 ${player2Name}
                             </span>
                         </div>
                         <div class="match-meta">
                             <span class="game-type">${match.gameType}</span>
                             <span class="date">${date}</span>
-                            <span class="winner">Gagnant: ${winnerName}</span>
+                            <span class="winner">${resultDisplay}</span>
                         </div>
                     </div>
                 </div>
@@ -468,7 +492,14 @@ const UI = (() => {
 
         const player1Name = getPlayerName(match.playerIds[0]);
         const player2Name = getPlayerName(match.playerIds[1]);
-        const winnerName = getPlayerName(match.winner);
+
+        // Afficher le gagnant ou DNF
+        let resultDisplay = '';
+        if (match.isDNF) {
+            resultDisplay = 'DNF (Did Not Finish)';
+        } else {
+            resultDisplay = getPlayerName(match.winner);
+        }
 
         const container = document.getElementById('matchDetailContent');
 
@@ -500,7 +531,7 @@ const UI = (() => {
                 <h3>${player1Name} VS ${player2Name}</h3>
                 <p class="game-info">
                     Jeu: ${match.gameType} | 
-                    Gagnant: <strong>${winnerName}</strong>
+                    Résultat: <strong>${resultDisplay}</strong>
                 </p>
                 <div class="throws-detailed">
                     ${throwsHtml}

@@ -219,9 +219,8 @@ appVersion          // version de l'app
 
 ### Documentation
 - Ne pas créer de fichier `.md` pour chaque modification/feature
-- Documenter les changements **majeurs** seulement dans des fichiers `.md` spécifiques
 - Commenter le code directement pour les détails techniques
-- Fichiers `.md` existants suffisent: `README.md`, `INSTRUCTIONS.md`, `DELETION_STRATEGY.md`, `ORPHAN_CLEANUP.md`
+- Fichiers `.md` existants suffisent: `README.md`, `INSTRUCTIONS.md`
 
 ## Flux Utilisateur Typique
 

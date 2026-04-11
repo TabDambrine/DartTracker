@@ -12,13 +12,29 @@ const Stats = (() => {
     };
 
     /**
+     * Vérifie si un match est un DNF (Did Not Finish)
+     * Les DNF ne comptent pas dans les statistiques
+     */
+    const isDNF = (match) => {
+        return match.isDNF === true;
+    };
+
+    /**
+     * Vérifie si un match est un self-play (même joueur contre lui-même)
+     * Les self-play ne comptent pas dans les statistiques
+     */
+    const isSelfPlayMatch = (match) => {
+        return match.isSelfPlay === true;
+    };
+
+    /**
      * Calcule la moyenne des scores par volée (averageRoundScore)
      * Basé sur tous les matchs du joueur, volées valides uniquement
-     * Ignore les matchs où un joueur a été supprimé
+     * Ignore les matchs où un joueur a été supprimé ou en DNF
      */
     const calculateAverageRoundScore = (playerId) => {
         const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match));
+            .filter(match => !hasDeletedPlayer(match) && !isDNF(match) && !isSelfPlayMatch(match));
 
         let totalScore = 0;
         let validRoundsCount = 0;
@@ -44,7 +60,7 @@ const Stats = (() => {
      */
     const calculateFinishDoubleSuccessRate = (playerId) => {
         const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match));
+            .filter(match => !hasDeletedPlayer(match) && !isSelfPlayMatch(match));
         const wonMatches = matches.filter(m => m.winner === playerId);
 
         if (wonMatches.length === 0) return 0;
@@ -80,7 +96,7 @@ const Stats = (() => {
      */
     const collectAllThrows = (playerId) => {
         const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match));
+            .filter(match => !hasDeletedPlayer(match) && !isSelfPlayMatch(match));
         const throwsMap = new Map(); // key: "segment-multiplier", value: {segment, multiplier, count}
 
         matches.forEach(match => {
@@ -115,12 +131,12 @@ const Stats = (() => {
     /**
      * Calcule les top 10 des fléchettes préférées (topThrows)
      * Inclut le pourcentage d'utilisation
-     * Ignore les matchs où un joueur a été supprimé
+     * Ignore les matchs où un joueur a été supprimé ou en DNF
      */
     const calculateTopThrows = (playerId) => {
         const throwsMap = collectAllThrows(playerId);
         const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match));
+            .filter(match => !hasDeletedPlayer(match) && !isDNF(match));
 
         // Compter le total de fléchettes lancées
         let totalDarts = 0;
@@ -153,11 +169,11 @@ const Stats = (() => {
      * Calcule le meilleur score de finish (bestFinishingScore)
      * Le score le plus élevé de la volée finale avec laquelle le joueur a remporté une partie
      * Par exemple: si joueur gagne en finissant avec une volée de 80 points, c'est un finish de 80
-     * Ignore les matchs où un joueur a été supprimé
+     * Ignore les matchs où un joueur a été supprimé ou en DNF
      */
     const calculateBestFinishingScore = (playerId) => {
         const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match));
+            .filter(match => !hasDeletedPlayer(match) && !isDNF(match) && !isSelfPlayMatch(match));
         const wonMatches = matches.filter(m => m.winner === playerId);
 
         if (wonMatches.length === 0) return 0;
@@ -188,11 +204,11 @@ const Stats = (() => {
 
     /**
      * Collecte les doubles utilisés pour finir les matchs gagnés
-     * Ignore les matchs où un joueur a été supprimé
+     * Ignore les matchs où un joueur a été supprimé, en DNF, ou self-play
      */
     const collectFinishingDoubles = (playerId) => {
         const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match));
+            .filter(match => !hasDeletedPlayer(match) && !isSelfPlayMatch(match));
         const wonMatches = matches.filter(m => m.winner === playerId);
         const doublesMap = new Map(); // key: "segment", value: {segment, multiplier: 2, count}
 
@@ -207,13 +223,14 @@ const Stats = (() => {
                     // Trouver la dernière fléchette qui est un double
                     for (let i = lastThrow.throw.length - 1; i >= 0; i--) {
                         const dart = lastThrow.throw[i];
-                        if (dart.multiplier === 2 && dart.segment && dart.segment !== 0 && dart.segment !== -1) {
-                            const key = `${dart.segment}`;
+                        // Utiliser Rules.isDouble() pour inclure BULL 50 et doubles normaux
+                        if (Rules.isDouble(dart) && dart.segment !== -1) {
+                            const key = dart.segment === 0 ? 'BULL' : `${dart.segment}`;
 
                             if (!doublesMap.has(key)) {
                                 doublesMap.set(key, {
                                     segment: dart.segment,
-                                    multiplier: 2,
+                                    multiplier: dart.segment === 0 ? 50 : 2,  // BULL = 50, autres = 2
                                     count: 0
                                 });
                             }

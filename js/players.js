@@ -73,6 +73,21 @@ const Players = (() => {
     };
 
     /**
+     * Enregistre un DNF (Did Not Finish) pour un joueur
+     * C'est ni une victoire ni une défaite
+     */
+    const recordDNF = (playerId) => {
+        const player = getById(playerId);
+        if (!player) return;
+
+        const stats = { ...player.stats };
+        stats.totalMatches += 1;
+        stats.dnf = (stats.dnf || 0) + 1;  // Compteur de DNF
+
+        Storage.updatePlayerStats(playerId, stats);
+    };
+
+    /**
      * Calcule les stats globales d'un joueur (appelle le module Stats pour les détails)
      */
     const getStats = (playerId) => {
@@ -90,6 +105,7 @@ const Players = (() => {
         getById,
         remove,
         updateAfterMatch,
+        recordDNF,
         getStats
     };
 })();

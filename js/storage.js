@@ -69,6 +69,7 @@ const Storage = (() => {
                 totalMatches: 0,
                 wins: 0,
                 losses: 0,
+                dnf: 0,  // Compteur de DNF (Did Not Finish)
                 averageRoundScore: 0,
                 finishDoubleSuccessRate: 0,
                 bestFinishingScore: 0,

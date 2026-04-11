@@ -77,7 +77,6 @@ const App = (() => {
                 UI.clearPlayerForm();
                 UI.renderPlayersList();
                 UI.renderSelectPlayerOptions();
-                UI.showSuccess(`${name} a été ajouté`);
             } catch (err) {
                 UI.showError(err.message);
             }
@@ -97,12 +96,19 @@ const App = (() => {
      * Events écran sélection joueurs
      */
     const attachSelectPlayersScreenEvents = () => {
+        const roundLimitInput = document.getElementById('roundLimitInput');
+
         // Sélection du type de jeu
         document.querySelectorAll('.btn-game-type').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.btn-game-type').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 selectedGameType = e.target.dataset.game;
+
+                // Définir la limite par défaut selon le type de jeu
+                if (!roundLimitInput.value) {
+                    roundLimitInput.placeholder = selectedGameType === '501' ? 'Ex: 15' : 'Ex: 10';
+                }
             });
         });
 
@@ -111,18 +117,28 @@ const App = (() => {
             const player1Id = document.getElementById('player1Select').value;
             const player2Id = document.getElementById('player2Select').value;
 
-            if (!player1Id || !player2Id) {
-                UI.showError('Veuillez sélectionner 2 joueurs');
+            if (!player1Id) {
+                UI.showError('Veuillez sélectionner le Joueur 1');
                 return;
             }
 
-            if (player1Id === player2Id) {
-                UI.showError('Veuillez sélectionner 2 joueurs différents');
+            if (!player2Id) {
+                UI.showError('Veuillez sélectionner le Joueur 2');
                 return;
             }
 
-            // Créer le match
-            const match = Games.createMatch(player1Id, player2Id, selectedGameType);
+            // Récupérer la limite de tours (null si vide, sinon entier positif)
+            let roundLimit = null;
+            if (roundLimitInput.value.trim()) {
+                roundLimit = parseInt(roundLimitInput.value);
+                if (isNaN(roundLimit) || roundLimit <= 0) {
+                    UI.showError('La limite de tours doit être un nombre positif');
+                    return;
+                }
+            }
+
+            // Créer le match avec tous les paramètres
+            const match = Games.createMatch(player1Id, player2Id, selectedGameType, roundLimit);
             startGame(match);
         });
 
@@ -217,7 +233,20 @@ const App = (() => {
                     const errorResult = Games.addInvalidThrow(throws, result.reason);
                     UI.updateScoresBoard();
                     UI.updateThrowsHistory();
-                    UI.updateThrowsForm();
+
+                    // Vérifier si on a déclenché un DNF par cette volée invalide
+                    const currentMatch = Games.getCurrentMatch();
+                    if (currentMatch && currentMatch.isDNF) {
+                        // DNF déclenché
+                        await UI.showMessageModal(
+                            '⏱️ Limite de Tours Atteinte',
+                            'Match non terminé (DNF - Did Not Finish)'
+                        );
+                        Games.clearCurrentMatch();
+                        UI.showScreen('homeScreen');
+                    } else {
+                        UI.updateThrowsForm();
+                    }
                 } else {
                     // Cliquez sur "Corriger" → abandonner et laisser corriger
                     UI.showThrowError('Veuillez corriger la volée');
@@ -229,11 +258,20 @@ const App = (() => {
             UI.updateThrowsHistory();
 
             if (result.finished) {
-                const winner = result.winner;
-                await UI.showMessageModal(
-                    '🎉 Match Terminé!',
-                    `${winner.name} a remporté le match!`
-                );
+                if (result.isDNF) {
+                    // Match DNF
+                    await UI.showMessageModal(
+                        '⏱️ Limite de Tours Atteinte',
+                        'Match non terminé (DNF - Did Not Finish)'
+                    );
+                } else {
+                    // Match normal terminé
+                    const winner = result.winner;
+                    await UI.showMessageModal(
+                        '🎉 Match Terminé!',
+                        `${winner.name} a remporté le match!`
+                    );
+                }
                 Games.clearCurrentMatch();
                 UI.showScreen('homeScreen');
             } else {

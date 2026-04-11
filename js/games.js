@@ -8,14 +8,23 @@ const Games = (() => {
 
     /**
      * Initialise un nouveau match
+     * @param {string} player1Id - ID du joueur 1
+     * @param {string} player2Id - ID du joueur 2 (peut être null pour entraînement)
+     * @param {string} gameType - "501" ou "301"
+     * @param {number|null} roundLimit - Limite de tours (null = pas de limite)
      */
-    const createMatch = (player1Id, player2Id, gameType) => {
+    const createMatch = (player1Id, player2Id, gameType, roundLimit = null) => {
         const startScore = gameType === '501' ? 501 : 301;
+        const isSelfPlay = player1Id === player2Id;
 
         const match = {
             id: Storage.generateId(),
             playerIds: [player1Id, player2Id],
+            isSelfPlay,  // true si player1Id === player2Id (match contre soi-même)
             gameType,
+            roundLimit,  // null = pas de limite, sinon nombre de tours
+            currentRound: 1,  // Compte les tours (1, 2, 3...)
+            isDNF: false,  // Did Not Finish (seulement si roundLimit atteint sans finish)
             startDate: Date.now(),
             endDate: null,
             winner: null,
@@ -116,17 +125,20 @@ const Games = (() => {
         if (validation.finished) {
             currentMatch.endDate = Date.now();
             currentMatch.winner = currentMatch.playerIds[playerIndex];
+            currentMatch.isDNF = false;
 
             // Sauvegarder le match
             Storage.addMatch(currentMatch);
 
-            // Mettre à jour les stats
-            Players.updateAfterMatch(currentMatch.playerIds[playerIndex], true);
-            Players.updateAfterMatch(currentMatch.playerIds[1 - playerIndex], false);
+            // Mettre à jour les stats seulement si ce n'est pas un self-play
+            if (!currentMatch.isSelfPlay) {
+                Players.updateAfterMatch(currentMatch.playerIds[playerIndex], true);
+                Players.updateAfterMatch(currentMatch.playerIds[1 - playerIndex], false);
 
-            // Recalculer les statistiques détaillées pour les deux joueurs
-            Stats.updatePlayerStats(currentMatch.playerIds[playerIndex]);
-            Stats.updatePlayerStats(currentMatch.playerIds[1 - playerIndex]);
+                // Recalculer les statistiques détaillées pour les deux joueurs
+                Stats.updatePlayerStats(currentMatch.playerIds[playerIndex]);
+                Stats.updatePlayerStats(currentMatch.playerIds[1 - playerIndex]);
+            }
 
             return {
                 success: true,
@@ -136,8 +148,38 @@ const Games = (() => {
             };
         }
 
-        // Passer au joueur suivant
+        // Passer au joueur suivant et vérifier la limite de tours
         currentMatch.currentPlayerIndex = 1 - currentMatch.currentPlayerIndex;
+
+        // Incrémenter le tour quand on revient au joueur 0 (après chaque volée du joueur 1)
+        if (currentMatch.currentPlayerIndex === 0) {
+            currentMatch.currentRound += 1;
+
+            // Vérifier si on a atteint la limite
+            if (currentMatch.roundLimit && currentMatch.currentRound > currentMatch.roundLimit) {
+                // DNF - Did Not Finish
+                currentMatch.endDate = Date.now();
+                currentMatch.isDNF = true;
+                currentMatch.winner = null;
+
+                // Sauvegarder le match DNF
+                Storage.addMatch(currentMatch);
+
+                // Mettre à jour le comptage de DNF pour les joueurs seulement si ce n'est pas un self-play
+                if (!currentMatch.isSelfPlay) {
+                    Players.recordDNF(currentMatch.playerIds[0]);
+                    Players.recordDNF(currentMatch.playerIds[1]);
+                }
+
+                return {
+                    success: true,
+                    valid: true,
+                    finished: true,
+                    isDNF: true,
+                    winner: null
+                };
+            }
+        }
 
         return {
             success: true,
@@ -182,6 +224,38 @@ const Games = (() => {
 
         // Passer au joueur suivant
         currentMatch.currentPlayerIndex = 1 - currentMatch.currentPlayerIndex;
+
+        // Incrémenter le tour quand on revient au joueur 0 et vérifier la limite DNF
+        if (currentMatch.currentPlayerIndex === 0) {
+            currentMatch.currentRound += 1;
+
+            // Vérifier si on a atteint la limite
+            if (currentMatch.roundLimit && currentMatch.currentRound > currentMatch.roundLimit) {
+                // DNF - Did Not Finish
+                currentMatch.endDate = Date.now();
+                currentMatch.isDNF = true;
+                currentMatch.winner = null;
+
+                // Sauvegarder le match DNF
+                Storage.addMatch(currentMatch);
+
+                // Mettre à jour le comptage de DNF pour les joueurs
+                if (!currentMatch.isTraining) {
+                    Players.recordDNF(currentMatch.playerIds[0]);
+                    Players.recordDNF(currentMatch.playerIds[1]);
+                } else {
+                    Players.recordDNF(currentMatch.playerIds[0]);
+                }
+
+                return {
+                    success: true,
+                    valid: false,
+                    finished: true,
+                    isDNF: true,
+                    winner: null
+                };
+            }
+        }
 
         return {
             success: true,
