@@ -2,7 +2,7 @@
   "name": "Dart Stats Tracker",
   "short_name": "DartStats",
   "description": "Tracker vos statistiques de fléchettes",
-  "start_url": "/DartTracker",
+  "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
