@@ -90,13 +90,68 @@ const Storage = (() => {
     };
 
     /**
-     * Supprime un joueur
+     * Supprime un joueur et remplace ses références dans les matchs
      */
     const deletePlayer = (id) => {
         let players = getPlayers();
         players = players.filter(p => p.id !== id);
         set(KEYS.PLAYERS, players);
+
+        // Remplacer les références du joueur supprimé dans les matchs
+        replacePlayerIdInMatches(id, 'deleted_player');
+
         return true;
+    };
+
+    /**
+     * Remplace l'ID d'un joueur par un autre dans tous les matchs
+     * Utile quand un joueur est supprimé (remplacer par "deleted_player")
+     * Appelle ensuite cleanOrphanMatches() pour supprimer les matchs avec deux joueurs supprimés
+     */
+    const replacePlayerIdInMatches = (oldPlayerId, newPlayerId) => {
+        const matches = getMatches();
+        matches.forEach(match => {
+            // Remplacer dans playerIds
+            match.playerIds = match.playerIds.map(id => 
+                id === oldPlayerId ? newPlayerId : id
+            );
+            // Remplacer dans winner si nécessaire
+            if (match.winner === oldPlayerId) {
+                match.winner = newPlayerId;
+            }
+            // Remplacer dans les throws (playerIds des lancers)
+            match.throws.forEach(throwRecord => {
+                // Note: playerIndex ne change pas, c'est un index numérique
+            });
+        });
+        set(KEYS.MATCHES, matches);
+
+        // Nettoyer les matchs orphelins après la suppression
+        cleanOrphanMatches();
+    };
+
+    /**
+     * Supprime les matchs où les deux joueurs ont été supprimés
+     * Cela évite d'encombrer localStorage avec des données inutiles
+     */
+    const cleanOrphanMatches = () => {
+        let matches = getMatches();
+        const initialCount = matches.length;
+
+        // Filtrer les matchs où les deux joueurs sont "deleted_player"
+        matches = matches.filter(match => {
+            const bothDeleted = match.playerIds[0] === 'deleted_player' && 
+                                match.playerIds[1] === 'deleted_player';
+            return !bothDeleted;
+        });
+
+        // Si des matchs ont été supprimés, mettre à jour
+        if (matches.length < initialCount) {
+            set(KEYS.MATCHES, matches);
+            console.log(`Nettoyage: ${initialCount - matches.length} match(es) orphelin(s) supprimé(s)`);
+        }
+
+        return initialCount - matches.length;
     };
 
     /**
@@ -191,6 +246,8 @@ const Storage = (() => {
         updateMatch,
         getMatchById,
         getPlayerMatches,
+        replacePlayerIdInMatches,
+        cleanOrphanMatches,
         clearAll,
         generateId,
         KEYS

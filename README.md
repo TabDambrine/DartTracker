@@ -8,6 +8,7 @@ Une Progressive Web App (PWA) pour tracker et analyser les statistiques de jeux 
 - **Saisie précise**: Segment + multiplicateur (Single, Double, Triple)
 - **Validation en temps réel**: Vérification automatique des règles
 - **Historique détaillé**: Enregistrement de toutes les volées (valides et invalides)
+- **Gestion des joueurs**: Créer, modifier, supprimer (l'historique est préservé)
 - **Statistiques complètes**:
   - Moyenne des volées
   - Taux de réussite au double (finish)
@@ -49,6 +50,13 @@ cd dart-stats-tracker
 ### Finish Anticipé
 Le système détecte les finishes anticipés - vous pouvez terminer une volée en moins de 3 darts!
 - Exemple: Score 61 = Triple 17 (51) + Double 5 (10) → Finish immédiat
+
+### Suppression de Joueur
+Vous pouvez supprimer un joueur à tout moment, même s'il a des matchs!
+- ✅ Les matchs et l'historique sont **conservés**
+- ✅ Les stats des autres joueurs **restent intactes**
+- 🔌 Le joueur supprimé apparaît comme "Joueur supprimé" dans les matchs
+- 📊 Les stats du joueur supprimé ne sont **plus** calculées
 
 ## 🏗️ Architecture
 

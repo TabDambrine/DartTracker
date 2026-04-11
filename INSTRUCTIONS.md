@@ -209,6 +209,20 @@ appVersion          // version de l'app
 5. **Responsive Design** - fonctionne sur mobile/tablet/desktop
 6. **Offline-first** - service worker pour cache
 
+## ⚠️ Notes de Développement
+
+### Pas de Build/Compilation
+- Ce projet est une **PWA web vanilla**, pas une application à compiler
+- Fonctionne directement dans le navigateur (`file://` ou serveur HTTP/HTTPS)
+- Aucun bundler, webpack, ou étape de build nécessaire
+- Les fichiers JS sont chargés en ordre dans `index.html`
+
+### Documentation
+- Ne pas créer de fichier `.md` pour chaque modification/feature
+- Documenter les changements **majeurs** seulement dans des fichiers `.md` spécifiques
+- Commenter le code directement pour les détails techniques
+- Fichiers `.md` existants suffisent: `README.md`, `INSTRUCTIONS.md`, `DELETION_STRATEGY.md`, `ORPHAN_CLEANUP.md`
+
 ## Flux Utilisateur Typique
 
 1. Créer 2 joueurs

@@ -5,11 +5,20 @@
 
 const Stats = (() => {
     /**
+     * Vérifie si un match contient un joueur supprimé
+     */
+    const hasDeletedPlayer = (match) => {
+        return match.playerIds.includes('deleted_player') || match.winner === 'deleted_player';
+    };
+
+    /**
      * Calcule la moyenne des scores par volée (averageRoundScore)
      * Basé sur tous les matchs du joueur, volées valides uniquement
+     * Ignore les matchs où un joueur a été supprimé
      */
     const calculateAverageRoundScore = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId);
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match));
 
         let totalScore = 0;
         let validRoundsCount = 0;
@@ -31,9 +40,11 @@ const Stats = (() => {
     /**
      * Calcule le taux de réussite au double (finishDoubleSuccessRate)
      * % de matchs où le joueur finit sur la première fléchette avec un double
+     * Ignore les matchs où un joueur a été supprimé
      */
     const calculateFinishDoubleSuccessRate = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId);
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match));
         const wonMatches = matches.filter(m => m.winner === playerId);
 
         if (wonMatches.length === 0) return 0;
@@ -65,21 +76,23 @@ const Stats = (() => {
     /**
      * Collecte toutes les fléchettes lancées et compte les occurrences
      * Filtre les MISS (segment = 0 ou -1)
+     * Ignore les matchs où un joueur a été supprimé
      */
     const collectAllThrows = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId);
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match));
         const throwsMap = new Map(); // key: "segment-multiplier", value: {segment, multiplier, count}
 
         matches.forEach(match => {
             const playerIndex = match.playerIds.indexOf(playerId);
-            
+
             match.throws.forEach(throwRecord => {
                 if (throwRecord.playerIndex === playerIndex && throwRecord.throw) {
                     throwRecord.throw.forEach(dart => {
                         // Ignorer les MISS (segment 0 ou -1)
                         if (dart.segment && dart.segment !== 0 && dart.segment !== -1) {
                             const key = `${dart.segment}-${dart.multiplier}`;
-                            
+
                             if (!throwsMap.has(key)) {
                                 throwsMap.set(key, {
                                     segment: dart.segment,
@@ -87,7 +100,7 @@ const Stats = (() => {
                                     count: 0
                                 });
                             }
-                            
+
                             const entry = throwsMap.get(key);
                             entry.count += 1;
                         }
@@ -102,11 +115,13 @@ const Stats = (() => {
     /**
      * Calcule les top 10 des fléchettes préférées (topThrows)
      * Inclut le pourcentage d'utilisation
+     * Ignore les matchs où un joueur a été supprimé
      */
     const calculateTopThrows = (playerId) => {
         const throwsMap = collectAllThrows(playerId);
-        const matches = Storage.getPlayerMatches(playerId);
-        
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match));
+
         // Compter le total de fléchettes lancées
         let totalDarts = 0;
         matches.forEach(match => {
@@ -138,9 +153,11 @@ const Stats = (() => {
      * Calcule le meilleur score de finish (bestFinishingScore)
      * Le score le plus élevé de la volée finale avec laquelle le joueur a remporté une partie
      * Par exemple: si joueur gagne en finissant avec une volée de 80 points, c'est un finish de 80
+     * Ignore les matchs où un joueur a été supprimé
      */
     const calculateBestFinishingScore = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId);
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match));
         const wonMatches = matches.filter(m => m.winner === playerId);
 
         if (wonMatches.length === 0) return 0;
@@ -171,9 +188,11 @@ const Stats = (() => {
 
     /**
      * Collecte les doubles utilisés pour finir les matchs gagnés
+     * Ignore les matchs où un joueur a été supprimé
      */
     const collectFinishingDoubles = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId);
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match));
         const wonMatches = matches.filter(m => m.winner === playerId);
         const doublesMap = new Map(); // key: "segment", value: {segment, multiplier: 2, count}
 
@@ -190,7 +209,7 @@ const Stats = (() => {
                         const dart = lastThrow.throw[i];
                         if (dart.multiplier === 2 && dart.segment && dart.segment !== 0 && dart.segment !== -1) {
                             const key = `${dart.segment}`;
-                            
+
                             if (!doublesMap.has(key)) {
                                 doublesMap.set(key, {
                                     segment: dart.segment,
@@ -198,7 +217,7 @@ const Stats = (() => {
                                     count: 0
                                 });
                             }
-                            
+
                             const entry = doublesMap.get(key);
                             entry.count += 1;
                             break; // On prend seulement le dernier double de la volée

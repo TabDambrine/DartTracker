@@ -128,17 +128,29 @@ const Rules = (() => {
 
     /**
      * Valide une volée et retourne les raisons d'invalidité
+     * Accepte 1-3 fléchettes (supporte les finishes partiels et volées complètes)
      * Retourne toujours un résultat même si invalide
      */
     const validateRoundDetailed = (gameType, currentScore, throws) => {
-        // Valider les 3 fléchettes
-        const throwValidation = validateThrows(throws);
-        if (!throwValidation.valid) {
+        // Valider le nombre et le format des fléchettes
+        if (!Array.isArray(throws) || throws.length === 0 || throws.length > 3) {
             return {
                 valid: false,
                 finished: false,
-                reason: throwValidation.reason
+                reason: 'Entre 1 et 3 fléchettes requises'
             };
+        }
+
+        // Valider chaque fléchette individuellement
+        for (let throw_ of throws) {
+            const validation = validateThrow(throw_);
+            if (!validation.valid) {
+                return {
+                    valid: false,
+                    finished: false,
+                    reason: validation.reason
+                };
+            }
         }
 
         // Calculer le total
@@ -167,7 +179,7 @@ const Rules = (() => {
         // Si le score devient exactement 0
         if (newScore === 0) {
             // Doit terminer avec un double
-            const lastThrow = throws[2];
+            const lastThrow = throws[throws.length - 1];
             if (!isDouble(lastThrow)) {
                 return {
                     valid: false,

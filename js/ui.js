@@ -5,6 +5,17 @@
 
 const UI = (() => {
     /**
+     * Obtient le nom d'un joueur (ou "Joueur supprimé" si absent)
+     */
+    const getPlayerName = (playerId) => {
+        if (playerId === 'deleted_player') {
+            return 'Joueur supprimé';
+        }
+        const player = Players.getById(playerId);
+        return player ? player.name : 'Joueur supprimé';
+    };
+
+    /**
      * Change l'écran actif
      */
     const showScreen = (screenId) => {
@@ -409,27 +420,27 @@ const UI = (() => {
         }
 
         container.innerHTML = matches.slice().reverse().map(match => {
-            const player1 = Players.getById(match.playerIds[0]);
-            const player2 = Players.getById(match.playerIds[1]);
-            const winner = Players.getById(match.winner);
+            const player1Name = getPlayerName(match.playerIds[0]);
+            const player2Name = getPlayerName(match.playerIds[1]);
+            const winnerName = getPlayerName(match.winner);
             const date = new Date(match.startDate).toLocaleDateString('fr-FR');
 
             return `
                 <div class="match-item" data-match-id="${match.id}">
                     <div class="match-info">
                         <div class="match-players">
-                            <span class="player ${match.winner === player1.id ? 'winner' : ''}">
-                                ${player1.name}
+                            <span class="player ${match.winner === match.playerIds[0] ? 'winner' : ''}">
+                                ${player1Name}
                             </span>
                             <span class="vs">VS</span>
-                            <span class="player ${match.winner === player2.id ? 'winner' : ''}">
-                                ${player2.name}
+                            <span class="player ${match.winner === match.playerIds[1] ? 'winner' : ''}">
+                                ${player2Name}
                             </span>
                         </div>
                         <div class="match-meta">
                             <span class="game-type">${match.gameType}</span>
                             <span class="date">${date}</span>
-                            <span class="winner">Gagnant: ${winner.name}</span>
+                            <span class="winner">Gagnant: ${winnerName}</span>
                         </div>
                     </div>
                 </div>
@@ -455,9 +466,9 @@ const UI = (() => {
             return;
         }
 
-        const player1 = Players.getById(match.playerIds[0]);
-        const player2 = Players.getById(match.playerIds[1]);
-        const winner = Players.getById(match.winner);
+        const player1Name = getPlayerName(match.playerIds[0]);
+        const player2Name = getPlayerName(match.playerIds[1]);
+        const winnerName = getPlayerName(match.winner);
 
         const container = document.getElementById('matchDetailContent');
 
@@ -465,7 +476,7 @@ const UI = (() => {
         for (let i = 0; i < 2; i++) {
             const throws = match.throws.filter(t => t.playerIndex === i);
             throwsHtml += `<div class="player-throws">
-                <h4>${Players.getById(match.playerIds[i]).name}</h4>`;
+                <h4>${getPlayerName(match.playerIds[i])}</h4>`;
 
             throws.forEach(t => {
                 const throwsDisplay = t.throw.map(th => Rules.formatThrow(th)).join(' + ');
@@ -486,10 +497,10 @@ const UI = (() => {
 
         container.innerHTML = `
             <div class="match-detail">
-                <h3>${player1.name} VS ${player2.name}</h3>
+                <h3>${player1Name} VS ${player2Name}</h3>
                 <p class="game-info">
                     Jeu: ${match.gameType} | 
-                    Gagnant: <strong>${winner.name}</strong>
+                    Gagnant: <strong>${winnerName}</strong>
                 </p>
                 <div class="throws-detailed">
                     ${throwsHtml}
@@ -621,6 +632,7 @@ const UI = (() => {
         updateThrowsHistory,
         renderMatchesList,
         renderMatchDetail,
-        renderStats
+        renderStats,
+        getPlayerName
     };
 })();

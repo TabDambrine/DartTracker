@@ -40,6 +40,8 @@ const Players = (() => {
 
     /**
      * Supprime un joueur
+     * Les références du joueur supprimé dans les matchs sont remplacées par 'deleted_player'
+     * Cela permet de garder l'historique des matchs sans perdre les stats des autres joueurs
      */
     const remove = (id) => {
         const player = getById(id);
@@ -47,12 +49,7 @@ const Players = (() => {
             throw new Error('Joueur introuvable');
         }
 
-        // Vérifier s'il a des matchs
-        const matches = Storage.getPlayerMatches(id);
-        if (matches.length > 0) {
-            throw new Error('Impossible de supprimer un joueur avec des matchs');
-        }
-
+        // Supprimer et remplacer les références dans les matchs
         return Storage.deletePlayer(id);
     };
 
