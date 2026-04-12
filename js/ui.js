@@ -465,107 +465,139 @@ const UI = (() => {
     };
 
     /**
-     * Rend les statistiques
+     * Rend les statistiques pour le joueur sélectionné
      */
     const renderStats = () => {
-        const container = document.getElementById('statsList');
         const players = Players.getAll();
+        const selectElement = document.getElementById('playerStatsSelect');
+        const container = document.getElementById('statsList');
 
-        if (players.length === 0) {
+        // Remplir le sélecteur de joueurs
+        if (selectElement) {
+            selectElement.innerHTML = players.map(p => 
+                `<option value="${p.id}">${p.name}</option>`
+            ).join('');
+
+            // Ajouter un événement changement
+            selectElement.removeEventListener('change', renderStatsForPlayer);
+            selectElement.addEventListener('change', renderStatsForPlayer);
+        }
+
+        // Afficher les stats du premier joueur par défaut
+        if (players.length > 0) {
+            renderStatsForPlayer();
+        } else {
             container.innerHTML = '<p class="empty-state">Aucun joueur</p>';
+        }
+    };
+
+    /**
+     * Affiche les stats du joueur sélectionné
+     */
+    const renderStatsForPlayer = () => {
+        const selectElement = document.getElementById('playerStatsSelect');
+        const container = document.getElementById('statsList');
+        const playerId = selectElement ? selectElement.value : null;
+
+        if (!playerId) {
+            container.innerHTML = '<p class="empty-state">Veuillez sélectionner un joueur</p>';
             return;
         }
 
-        container.innerHTML = players.map(player => {
-            const formattedStats = Stats.getFormattedStats(player.id);
-            if (!formattedStats) return '';
+        const player = Players.getById(playerId);
+        if (!player) {
+            container.innerHTML = '<p class="empty-state">Joueur non trouvé</p>';
+            return;
+        }
 
-            const stats = formattedStats.displayStats;
+        const formattedStats = Stats.getFormattedStats(playerId);
+        if (!formattedStats) {
+            container.innerHTML = '<p class="empty-state">Aucune donnée pour ce joueur</p>';
+            return;
+        }
 
-            // Formater les coups préférés
-            let topThrowsHtml = '<div class="top-throws">';
-            if (stats.topThrows.length === 0) {
-                topThrowsHtml += '<p class="no-data">Pas de données</p>';
-            } else {
-                topThrowsHtml += stats.topThrows.slice(0, 5).map((t, i) => {
-                    const throwDisplay = Rules.formatThrow({ segment: t.segment, multiplier: t.multiplier });
-                    return `<div class="throw-stat">
-                        <span class="rank">${i + 1}.</span>
-                        <span class="throw-name">${throwDisplay}</span>
-                        <span class="count">${t.count}x (${t.percentage.toFixed(1)}%)</span>
-                    </div>`;
-                }).join('');
-            }
-            topThrowsHtml += '</div>';
+        const stats = formattedStats.displayStats;
 
-            // Formater le double préféré
-            let preferredDoubleHtml = '<div class="preferred-double">';
-            if (stats.preferredFinishingDouble) {
-                const doubleDisplay = Rules.formatThrow({ 
-                    segment: stats.preferredFinishingDouble.segment, 
-                    multiplier: 2 
-                });
-                preferredDoubleHtml += `
-                    <div class="double-info">
-                        <span class="double-name">${doubleDisplay}</span>
-                        <span class="double-stats">${stats.preferredFinishingDouble.count}x (${stats.preferredFinishingDouble.percentage.toFixed(1)}%)</span>
-                    </div>
-                `;
-            } else {
-                preferredDoubleHtml += '<p class="no-data">Pas de finish réalisé</p>';
-            }
-            preferredDoubleHtml += '</div>';
+        // Formater les coups préférés
+        let topThrowsHtml = '<div class="top-throws">';
+        if (stats.topThrows.length === 0) {
+            topThrowsHtml += '<p class="no-data">Pas de données</p>';
+        } else {
+            topThrowsHtml += stats.topThrows.slice(0, 5).map((t, i) => {
+                const throwDisplay = Rules.formatThrow({ segment: t.segment, multiplier: t.multiplier });
+                return `<div class="throw-stat">
+                    <span class="rank">${i + 1}</span>
+                    <span class="throw-name">${throwDisplay}</span>
+                    <span class="count">${t.count}x</span>
+                </div>`;
+            }).join('');
+        }
+        topThrowsHtml += '</div>';
 
-            return `
-                <div class="stats-card detailed-stats">
-                    <h3>${player.name}</h3>
-
-                    <!-- Stats Basiques -->
-                    <div class="stats-section">
-                        <h4>Vue Synthétique</h4>
-                        <div class="stats-grid">
-                            <div class="stat">
-                                <div class="stat-label">Matchs</div>
-                                <div class="stat-value">${stats.matchesInfo}</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-label">Taux de victoire</div>
-                                <div class="stat-value">${stats.winRate}%</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-label">Moyenne par volée</div>
-                                <div class="stat-value">${stats.averageRoundScore} pts</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-label">Finish au double</div>
-                                <div class="stat-value">${stats.finishDoubleSuccessRate}%</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Meilleur Score de Finish -->
-                    <div class="stats-section">
-                        <h4>🎯 Meilleur Score de Finish</h4>
-                        <div class="best-score">
-                            <span class="score-value">${stats.bestFinishingScore}</span>
-                            <span class="score-label">points</span>
-                        </div>
-                    </div>
-
-                    <!-- Top 5 Coups Préférés -->
-                    <div class="stats-section">
-                        <h4>📊 Top 5 Coups Préférés</h4>
-                        ${topThrowsHtml}
-                    </div>
-
-                    <!-- Double Préféré pour Finish -->
-                    <div class="stats-section">
-                        <h4>🎯 Double Préféré pour Finish</h4>
-                        ${preferredDoubleHtml}
-                    </div>
+        // Formater le double préféré
+        let preferredDoubleHtml = '<div class="preferred-double">';
+        if (stats.preferredFinishingDouble) {
+            const doubleDisplay = Rules.formatThrow({ 
+                segment: stats.preferredFinishingDouble.segment, 
+                multiplier: 2 
+            });
+            preferredDoubleHtml += `
+                <div class="double-info">
+                    <span class="double-name">${doubleDisplay}</span>
+                    <span class="double-stats">${stats.preferredFinishingDouble.count}x</span>
                 </div>
             `;
-        }).join('');
+        } else {
+            preferredDoubleHtml += '<p class="no-data">Pas de finish réalisé</p>';
+        }
+        preferredDoubleHtml += '</div>';
+
+        container.innerHTML = `
+            <div class="stats-card">
+                <!-- Stats Basiques -->
+                <div class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <div class="stat-label">Matchs</div>
+                            <div class="stat-value">${stats.matchesInfo}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Taux victoire</div>
+                            <div class="stat-value">${stats.winRate}%</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Moy/volée</div>
+                            <div class="stat-value">${stats.averageRoundScore}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Finish %</div>
+                            <div class="stat-value">${stats.finishDoubleSuccessRate}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meilleur Score de Finish -->
+                <div class="stats-section">
+                    <h4>🎯 Meilleur Finish</h4>
+                    <div class="best-score">
+                        <span class="score-value">${stats.bestFinishingScore}</span>
+                        <span class="score-label">pts</span>
+                    </div>
+                </div>
+
+                <!-- Top 5 Coups -->
+                <div class="stats-section">
+                    <h4>📊 Top 5 Coups</h4>
+                    ${topThrowsHtml}
+                </div>
+
+                <!-- Double Préféré -->
+                <div class="stats-section">
+                    <h4>🎯 Double Préféré</h4>
+                    ${preferredDoubleHtml}
+                </div>
+            </div>
+        `;
     };
 
     /**

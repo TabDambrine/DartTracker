@@ -1,64 +1,67 @@
 /**
  * Dart Stats Tracker - Stats Screen
- * Statistiques globales, cartes de stats, détails détaillés
+ * Statistiques condensées pour mobile
  */
 
-/* Stats List */
+/* Sélecteur de joueur */
+.player-selector {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+}
 
+.player-selector .selector-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+
+.player-selector .form-input {
+    flex: 1;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+/* Stats List */
 .stats-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
 }
 
 .stats-card {
     background: white;
-    padding: var(--spacing-lg);
+    padding: var(--spacing-md);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
-    border-top: 4px solid var(--primary-color);
+    border-left: 4px solid var(--primary-color);
 }
 
 .stats-card h3 {
-    margin-bottom: var(--spacing-lg);
-    color: var(--text-dark);
+    display: none;  /* Masquer le nom du joueur puisqu'il est sélectionné */
 }
 
+/* Grille condensée */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
 }
 
-.stat {
-    text-align: center;
-    padding: var(--spacing-md);
-    background: var(--light-bg);
-    border-radius: var(--radius-md);
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    color: var(--text-light);
-    margin-bottom: var(--spacing-sm);
-}
-
-.stat-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-}
-
-/* Detailed Stats */
-
-.detailed-stats {
-    background: white;
-    border-top-color: var(--secondary-color);
-}
-
+/* Sections de détails */
 .stats-section {
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
     border-bottom: 1px solid var(--border-color);
 }
 
@@ -69,60 +72,59 @@
 }
 
 .stats-section h4 {
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: var(--text-dark);
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
     display: flex;
     align-items: center;
     gap: var(--spacing-sm);
+    font-weight: 700;
 }
 
 /* Best Score */
-
 .best-score {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
     background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
     border-radius: var(--radius-md);
 }
 
 .score-value {
-    font-size: 2.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--primary-color);
 }
 
 .score-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--text-dark);
 }
 
 /* Top Throws */
-
 .top-throws {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: var(--spacing-xs);
 }
 
 .throw-stat {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 30px 1fr 40px;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm);
     background: var(--light-bg);
     border-radius: var(--radius-sm);
-    border-left: 3px solid var(--primary-color);
+    font-size: 0.85rem;
 }
 
 .throw-stat .rank {
     font-weight: 700;
     color: var(--primary-color);
-    font-size: 1.1rem;
+    text-align: center;
 }
 
 .throw-stat .throw-name {
@@ -133,11 +135,10 @@
 .throw-stat .count {
     text-align: right;
     color: var(--text-light);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
 }
 
 /* Preferred Double */
-
 .preferred-double {
     display: flex;
     flex-direction: column;
@@ -148,28 +149,28 @@
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    gap: var(--spacing-md);
-    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
     background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-    border-radius: var(--radius-md);
-    border-left: 4px solid var(--secondary-color);
+    border-radius: var(--radius-sm);
 }
 
 .double-name {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--secondary-dark);
 }
 
 .double-stats {
     color: var(--text-dark);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     text-align: right;
 }
 
 .no-data {
     color: var(--text-light);
     font-style: italic;
+    font-size: 0.85rem;
     padding: var(--spacing-md);
     text-align: center;
 }
