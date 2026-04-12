@@ -182,35 +182,8 @@ const App = (() => {
             }
         });
 
-        // Events pour les sélecteurs de fléchettes
-        document.querySelectorAll('.throw-selector').forEach((selector, index) => {
-            selector.querySelector('.segment-select').addEventListener('change', (e) => {
-                UI.updateThrowDisplay(selector);
-                // Auto-focus vers le multiplicateur
-                setTimeout(() => selector.querySelector('.multiplier-select').focus(), 0);
-            });
-
-            selector.querySelector('.multiplier-select').addEventListener('change', (e) => {
-                UI.updateThrowDisplay(selector);
-                // Auto-focus vers le prochain sélecteur ou le bouton
-                if (index < 2) {
-                    setTimeout(() => {
-                        document.querySelectorAll('.throw-selector')[index + 1]
-                            .querySelector('.segment-select').focus();
-                    }, 0);
-                } else {
-                    setTimeout(() => document.getElementById('btnSubmitThrows').focus(), 0);
-                }
-            });
-
-            // Tab navigation
-            selector.querySelector('.multiplier-select').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    submitThrows();
-                }
-            });
-        });
+        // Les événements des sélecteurs de fléchettes sont maintenant gérés dans ThrowsInput
+        // Aucune autre gestion nécessaire ici
     };
 
     /**
@@ -293,15 +266,15 @@ const App = (() => {
             const playerIndex = match.currentPlayerIndex;
             const currentScore = match.scores[playerIndex];
 
-            // Collecter les fléchettes jusqu'à trouver le finish
+            // Collecter les fléchettes jusqu'à trouver le finish (utilise ThrowsInput)
+            const throwsState = ThrowsInput.getState();
             const partialThrows = [];
-            const selectors = document.querySelectorAll('.throw-selector');
 
-            for (let selector of selectors) {
-                const segment = parseInt(selector.querySelector('.segment-select').value);
-                const multiplier = parseInt(selector.querySelector('.multiplier-select').value);
+            for (let i = 0; i < throwsState.length; i++) {
+                const throw_ = throwsState[i];
+                if (throw_.segment === null) break;
 
-                partialThrows.push({ segment, multiplier });
+                partialThrows.push({ segment: throw_.segment, multiplier: throw_.multiplier });
 
                 // Vérifier la validation partielle
                 const validation = Rules.validatePartialFinish(match.gameType, currentScore, partialThrows);

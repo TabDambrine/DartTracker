@@ -6,10 +6,11 @@
 const Rules = (() => {
     // Segments valides du dartboard
     // -1 = MISS (fléchette hors cible, 0 points)
-    // 0 = BULL's eye (50 points)
+    // 0 = BULL's eye (50 points, même que 50 mais code interne différent)
     // 1-20 = segments standards
     // 25 = BULL outer (25 points)
-    const SEGMENTS = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25];
+    // 50 = BULL's eye (50 points, utilisé dans l'interface UI)
+    const SEGMENTS = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 25, 50];
 
     // Multiplicateurs
     const MULTIPLIERS = {
@@ -49,8 +50,8 @@ const Rules = (() => {
             return { valid: false, reason: 'Multiplicateur invalide' };
         }
 
-        // BULL ne peut pas avoir de multiplicateur (c'est spécial)
-        if ((segment === 25 || segment === 0) && multiplier !== MULTIPLIERS.SINGLE) {
+        // BULL (25 et 50) ne peut pas avoir de multiplicateur (c'est spécial)
+        if ((segment === 25 || segment === 0 || segment === 50) && multiplier !== MULTIPLIERS.SINGLE) {
             return { valid: false, reason: 'BULL ne peut pas avoir de multiplicateur' };
         }
 
@@ -86,12 +87,12 @@ const Rules = (() => {
             return 0;  // Miss = 0 points
         }
 
-        // Cas du BULL's eye
-        if (segment === 0) {
+        // Cas du BULL's eye (segment 0 ou 50 = 50 points)
+        if (segment === 0 || segment === 50) {
             return 50;  // Bull's eye = 50 points (compte comme double)
         }
 
-        // Cas du BULL outer
+        // Cas du BULL outer (segment 25 = 25 points)
         if (segment === 25) {
             return 25;  // Inner bull = 25 points
         }
@@ -109,8 +110,8 @@ const Rules = (() => {
         // MISS n'est pas un double
         if (throw_.segment === -1) return false;
 
-        // Bull's eye (segment 0) compte comme double
-        if (throw_.segment === 0) return true;
+        // Bull's eye (segment 0 ou 50) compte comme double
+        if (throw_.segment === 0 || throw_.segment === 50) return true;
 
         // Double multiplicateur
         if (throw_.multiplier === MULTIPLIERS.DOUBLE) return true;
@@ -206,11 +207,14 @@ const Rules = (() => {
             return `MISS (0)`;
         }
 
-        if (segment === 0) {
-            return `BULL (${score})`;
+        // BULL's eye (0 ou 50)
+        if (segment === 0 || segment === 50) {
+            return `BULL 50 (${score})`;
         }
+
+        // BULL outer (25)
         if (segment === 25) {
-            return `25`;
+            return `BULL 25 (${score})`;
         }
 
         const multiplierName = {

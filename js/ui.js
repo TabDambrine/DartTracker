@@ -227,111 +227,26 @@ const UI = (() => {
         // Afficher la suggestion de finition si le score <= 170
         updateFinishSuggestion(player.id, match.scores[match.currentPlayerIndex]);
 
-        // Réinitialiser les sélecteurs de fléchettes
+        // Réinitialiser les sélecteurs de fléchettes avec le nouveau composant
         resetThrowSelectors();
-
-        // Focus sur le premier segment
-        const firstSegmentSelect = document.querySelector('.throw-selector:nth-child(1) .segment-select');
-        if (firstSegmentSelect) {
-            firstSegmentSelect.focus();
-        }
     };
 
     /**
      * Réinitialise les sélecteurs de fléchettes
      */
     const resetThrowSelectors = () => {
-        document.querySelectorAll('.throw-selector').forEach(selector => {
-            selector.querySelector('.segment-select').value = '20';
-            selector.querySelector('.multiplier-select').value = '1';
-            updateThrowDisplay(selector);
-        });
+        ThrowsInput.resetThrows();
+        ThrowsInput.renderThrows();
         document.getElementById('throwError').style.display = 'none';
-    };
-
-    /**
-     * Met à jour l'affichage d'une fléchette ET vérifie si on peut finir
-     */
-    const updateThrowDisplay = (selectorElement) => {
-        const segment = parseInt(selectorElement.querySelector('.segment-select').value);
-        const multiplierSelect = selectorElement.querySelector('.multiplier-select');
-        let multiplier = parseInt(multiplierSelect.value);
-
-        // Si MISS (-1), forcer le multiplicateur à 1 et désactiver
-        if (segment === -1) {
-            multiplier = 1;
-            multiplierSelect.value = '1';
-            multiplierSelect.disabled = true;
-        } else {
-            multiplierSelect.disabled = false;
-        }
-
-        const score = Rules.calculateScore({ segment, multiplier });
-        const display = Rules.formatThrow({ segment, multiplier });
-
-        selectorElement.querySelector('.throw-display').textContent = `${display}`;
-        selectorElement.dataset.score = score;
-
-        // Vérifier si on peut finir avec moins de 3 fléchettes
-        checkForPartialFinish();
-    };
-
-    /**
-     * Vérifie si une volée partielle peut finir le match
-     */
-    const checkForPartialFinish = () => {
-        const match = Games.getCurrentMatch();
-        if (!match) return;
-
-        const playerIndex = match.currentPlayerIndex;
-        const currentScore = match.scores[playerIndex];
-        const player = Games.getCurrentPlayer();
-
-        // Mettre à jour la suggestion de finition
-        if (player) {
-            updateFinishSuggestion(player.id, currentScore);
-        }
-
-        // Collecter les fléchettes remplies
-        const throws = [];
-        const selectors = document.querySelectorAll('.throw-selector');
-
-        for (let selector of selectors) {
-            const segment = parseInt(selector.querySelector('.segment-select').value);
-            const multiplier = parseInt(selector.querySelector('.multiplier-select').value);
-
-            throws.push({ segment, multiplier });
-
-            // Vérifier la validation partielle
-            const validation = Rules.validatePartialFinish(match.gameType, currentScore, throws);
-
-            if (validation.finished) {
-                // On peut finir ici!
-                document.getElementById('btnSubmitThrows').style.display = 'none';
-                document.getElementById('btnSubmitPartialFinish').style.display = 'block';
-                return;
-            } else if (!validation.valid) {
-                // La volée jusqu'à présent est invalide
-                break;
-            }
-        }
-
-        // Pas de finish partiel détecté
         document.getElementById('btnSubmitThrows').style.display = 'block';
         document.getElementById('btnSubmitPartialFinish').style.display = 'none';
     };
 
     /**
-     * Récupère les 3 fléchettes du formulaire
+     * Récupère les fléchettes du formulaire (utilise maintenant ThrowsInput)
      */
     const getThrowsFromForm = () => {
-        const throws = [];
-        document.querySelectorAll('.throw-selector').forEach((selector, index) => {
-            const segment = parseInt(selector.querySelector('.segment-select').value);
-            const multiplier = parseInt(selector.querySelector('.multiplier-select').value);
-            throws.push({ segment, multiplier });
-        });
-        return throws;
+        return ThrowsInput.getThrows();
     };
 
     /**
@@ -702,7 +617,6 @@ const UI = (() => {
         updateScoresBoard,
         updateThrowsForm,
         resetThrowSelectors,
-        updateThrowDisplay,
         getThrowsFromForm,
         updateThrowsHistory,
         renderMatchesList,

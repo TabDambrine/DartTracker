@@ -1,0 +1,384 @@
+/**
+ * Dart Stats Tracker - Throws Input Component
+ * Interface mobile-friendly pour la saisie des fléchettes avec cases clickables
+ */
+
+/* Container des fléchettes */
+.throws-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+/* Bloc d'une fléchette */
+.throw-block {
+    background: var(--light-bg);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--border-color);
+    transition: all 0.2s;
+}
+
+.throw-block.editing {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    background: white;
+}
+
+.throw-block.completed {
+    background: var(--light-bg);
+    border-color: #27ae60;
+    opacity: 0.85;
+}
+
+/* Label et résumé de la fléchette */
+.throw-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    min-height: 1.5rem;
+}
+
+.throw-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.throw-summary {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    min-width: 70px;
+    text-align: right;
+}
+
+.throw-block.completed .throw-summary {
+    color: #27ae60;
+}
+
+/* Sélecteurs avec cases clickables */
+.throw-selectors {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+/* Multiplicateur (S, D, T) */
+.multiplier-selector {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: flex-start;
+}
+
+.multiplier-selector-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    padding-top: var(--spacing-sm);
+    min-width: 32px;
+    text-align: center;
+}
+
+.multiplier-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
+.multiplier-btn {
+    flex: 1;
+    padding: var(--spacing-sm) 0;
+    border: 2px solid var(--border-color);
+    background: white;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.multiplier-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.multiplier-btn.selected {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.multiplier-btn:active {
+    transform: scale(0.96);
+}
+
+.multiplier-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #ecf0f1;
+    color: var(--text-light);
+    border-color: #bdc3c7;
+}
+
+.multiplier-btn:disabled:hover {
+    background: #ecf0f1;
+    border-color: #bdc3c7;
+}
+
+/* Sélection des valeurs (1-20, 25, 50) */
+.segment-selector {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.segment-selector-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Grille des segments - utilise des proportions pour adapter la taille */
+.segment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
+    gap: 4px;
+}
+
+.segment-btn {
+    aspect-ratio: 1;
+    padding: 0;
+    border: 2px solid var(--border-color);
+    background: white;
+    color: var(--text-dark);
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+}
+
+.segment-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.segment-btn.selected {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.segment-btn:active {
+    transform: scale(0.92);
+}
+
+/* Bouton OUT (MISS) - même taille que les autres boutons */
+.out-btn {
+    background: white;
+    color: var(--text-dark);
+    border-color: var(--border-color);
+    font-size: 0.7rem;
+}
+
+.out-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(231, 76, 60, 0.05);
+}
+
+.out-btn.selected {
+    background: #c0392b;
+    color: white;
+    border-color: #c0392b;
+}
+
+/* État compact (fléchette complétée) */
+.throw-block.completed .throw-selectors {
+    display: none;
+}
+
+.throw-block.completed .throw-edit-btn {
+    display: block;
+}
+
+.throw-block.editing .throw-edit-btn {
+    display: none;
+}
+
+.throw-edit-btn {
+    display: none;
+    width: 100%;
+    padding: var(--spacing-sm);
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.throw-edit-btn:hover {
+    background: var(--primary-dark);
+}
+
+.throw-edit-btn:active {
+    transform: scale(0.97);
+}
+
+/* ========== Responsive ========== */
+
+/* Écrans très petits (< 360px) */
+@media (max-width: 360px) {
+    .throw-block {
+        padding: var(--spacing-sm);
+    }
+
+    .throw-header {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .throw-label {
+        font-size: 0.75rem;
+    }
+
+    .throw-summary {
+        font-size: 1rem;
+        min-width: 60px;
+    }
+
+    .multiplier-selector-label {
+        font-size: 0.6rem;
+        min-width: 28px;
+    }
+
+    .multiplier-btn {
+        font-size: 0.75rem;
+        padding: var(--spacing-xs) 0;
+        min-height: 36px;
+    }
+
+    .segment-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 3px;
+    }
+
+    .segment-btn {
+        font-size: 0.65rem;
+        min-height: 28px;
+    }
+
+    .out-btn {
+        font-size: 0.6rem;
+    }
+}
+
+/* Petits écrans mobiles (360px - 480px) */
+@media (min-width: 361px) and (max-width: 480px) {
+    .throw-block {
+        padding: var(--spacing-md);
+    }
+
+    .multiplier-btn {
+        min-height: 40px;
+        font-size: 0.85rem;
+    }
+
+    .segment-grid {
+        grid-template-columns: repeat(6, 1fr);
+        gap: 4px;
+    }
+
+    .segment-btn {
+        font-size: 0.7rem;
+        min-height: 32px;
+    }
+}
+
+/* Écrans moyens (> 480px) */
+@media (min-width: 481px) {
+    .segment-grid {
+        grid-template-columns: repeat(8, 1fr);
+        gap: 4px;
+    }
+
+    .segment-btn {
+        font-size: 0.75rem;
+        min-height: 36px;
+    }
+
+    .throw-block {
+        padding: var(--spacing-md);
+    }
+}
+
+/* Écrans larges (tablette et desktop) */
+@media (min-width: 768px) {
+    .segment-grid {
+        grid-template-columns: repeat(11, 1fr);
+        gap: 5px;
+    }
+
+    .segment-btn {
+        font-size: 0.8rem;
+        min-height: 40px;
+    }
+
+    .multiplier-btn {
+        min-height: 44px;
+        font-size: 0.9rem;
+    }
+
+    .throw-block {
+        padding: var(--spacing-lg);
+    }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .throw-block,
+    .multiplier-btn,
+    .segment-btn,
+    .throw-edit-btn {
+        transition: none;
+    }
+
+    .multiplier-btn:active,
+    .segment-btn:active {
+        transform: none;
+    }
+}
+
+/* Print */
+@media print {
+    .multiplier-btn,
+    .segment-btn,
+    .throw-edit-btn {
+        display: none;
+    }
+
+    .throw-summary {
+        border: 1px solid #333;
+    }
+}
+

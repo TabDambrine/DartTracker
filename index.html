@@ -11,21 +11,22 @@
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="apple-touch-icon" href="favicon.ico">
      <!-- CSS Modules (ordre d'importance) -->
-    <!-- 1. Variables et resets globaux -->
-    <link rel="stylesheet" href="css/variables.css">
-    <!-- 2. Layout principal (grille, screens, header) -->
-    <link rel="stylesheet" href="css/layout.css">
-    <!-- 3. Composants réutilisables (boutons, formulaires) -->
-    <link rel="stylesheet" href="css/components.css">
-    <!-- 4. Modules spécifiques par écran -->
-    <link rel="stylesheet" href="css/players.css">
-    <link rel="stylesheet" href="css/game.css">
-    <link rel="stylesheet" href="css/matches.css">
-    <link rel="stylesheet" href="css/stats.css">
-    <!-- 5. Utilitaires (modales, loader, états vides) -->
-    <link rel="stylesheet" href="css/utils.css">
-    <!-- 6. Responsive et accessibilité (doit être en dernier) -->
-    <link rel="stylesheet" href="css/responsive.css">
+     <!-- 1. Variables et resets globaux -->
+     <link rel="stylesheet" href="css/variables.css">
+     <!-- 2. Layout principal (grille, screens, header) -->
+     <link rel="stylesheet" href="css/layout.css">
+     <!-- 3. Composants réutilisables (boutons, formulaires) -->
+     <link rel="stylesheet" href="css/components.css">
+     <!-- 4. Modules spécifiques par écran -->
+     <link rel="stylesheet" href="css/players.css">
+     <link rel="stylesheet" href="css/game.css">
+     <link rel="stylesheet" href="css/throws.css">
+     <link rel="stylesheet" href="css/matches.css">
+     <link rel="stylesheet" href="css/stats.css">
+     <!-- 5. Utilitaires (modales, loader, états vides) -->
+     <link rel="stylesheet" href="css/utils.css">
+     <!-- 6. Responsive et accessibilité (doit être en dernier) -->
+     <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
     <div id="app" class="app">
@@ -144,130 +145,22 @@
                     </div>
                 </div>
 
-                <!-- Formulaire d'entrée des scores -->
+                <!-- Formulaire d'entrée des scores avec interface mobile-friendly -->
                 <div id="throwsForm" class="throws-form">
                     <h3 id="currentPlayerName"></h3>
                     <p id="currentPlayerScore" class="score-info"></p>
                     <div id="finishSuggestion" class="finish-suggestion" style="display: none;"></div>
 
-                    <div class="throws-selectors">
-                        <div class="throw-selector">
-                            <div class="selector-label">Fléchette 1</div>
-                            <div class="selector-controls">
-                                <select class="segment-select form-input">
-                                    <option value="-1">MISS</option>
-                                    <option value="20">20</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                    <option value="6">6</option>
-                                    <option value="7">7</option>
-                                    <option value="8">8</option>
-                                    <option value="9">9</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                    <option value="13">13</option>
-                                    <option value="14">14</option>
-                                    <option value="15">15</option>
-                                    <option value="16">16</option>
-                                    <option value="17">17</option>
-                                    <option value="18">18</option>
-                                    <option value="19">19</option>
-                                    <option value="25">BULL 25</option>
-                                    <option value="0">BULL 50</option>
-                                </select>
-                                <select class="multiplier-select form-input">
-                                    <option value="1">Simple</option>
-                                    <option value="2">Double</option>
-                                    <option value="3">Triple</option>
-                                </select>
-                            </div>
-                            <div class="throw-display">Simple 20 (20)</div>
-                        </div>
-
-                        <div class="throw-selector">
-                            <div class="selector-label">Fléchette 2</div>
-                            <div class="selector-controls">
-                                <select class="segment-select form-input">
-                                    <option value="-1">MISS</option>
-                                    <option value="20">20</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                    <option value="6">6</option>
-                                    <option value="7">7</option>
-                                    <option value="8">8</option>
-                                    <option value="9">9</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                    <option value="13">13</option>
-                                    <option value="14">14</option>
-                                    <option value="15">15</option>
-                                    <option value="16">16</option>
-                                    <option value="17">17</option>
-                                    <option value="18">18</option>
-                                    <option value="19">19</option>
-                                    <option value="25">BULL 25</option>
-                                    <option value="0">BULL 50</option>
-                                </select>
-                                <select class="multiplier-select form-input">
-                                    <option value="1">Simple</option>
-                                    <option value="2">Double</option>
-                                    <option value="3">Triple</option>
-                                </select>
-                            </div>
-                            <div class="throw-display">Simple 20 (20)</div>
-                        </div>
-
-                        <div class="throw-selector">
-                            <div class="selector-label">Fléchette 3</div>
-                            <div class="selector-controls">
-                                <select class="segment-select form-input">
-                                    <option value="-1">MISS</option>
-                                    <option value="20">20</option>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                    <option value="6">6</option>
-                                    <option value="7">7</option>
-                                    <option value="8">8</option>
-                                    <option value="9">9</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                    <option value="13">13</option>
-                                    <option value="14">14</option>
-                                    <option value="15">15</option>
-                                    <option value="16">16</option>
-                                    <option value="17">17</option>
-                                    <option value="18">18</option>
-                                    <option value="19">19</option>
-                                    <option value="25">BULL 25</option>
-                                    <option value="0">BULL 50</option>
-                                </select>
-                                <select class="multiplier-select form-input">
-                                    <option value="1">Simple</option>
-                                    <option value="2">Double</option>
-                                    <option value="3">Triple</option>
-                                </select>
-                            </div>
-                            <div class="throw-display">Simple 20 (20)</div>
-                        </div>
+                    <!-- Conteneur des fléchettes (affichage progressif) -->
+                    <div id="throwsContainer" class="throws-container">
+                        <!-- Les fléchettes seront insérées dynamiquement ici -->
                     </div>
 
                     <div id="throwError" class="error-message" style="display: none;"></div>
 
                     <div class="throw-submission-buttons">
-                        <button id="btnSubmitThrows" class="btn btn-success">Valider la volée (3 fléchettes)</button>
-                        <button id="btnSubmitPartialFinish" class="btn btn-success btn-secondary" style="display: none;">✓ Finish! (volée terminée)</button>
+                        <button id="btnSubmitThrows" class="btn btn-success" style="display: none;">Valider la volée</button>
+                        <button id="btnSubmitPartialFinish" class="btn btn-success btn-secondary" style="display: none;">✓ Finish!</button>
                     </div>
                 </div>
 
@@ -353,6 +246,7 @@
     <script src="js/games.js"></script>
     <script src="js/stats.js"></script>
     <script src="js/finishes.js"></script>
+    <script src="js/throws-input.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
 
