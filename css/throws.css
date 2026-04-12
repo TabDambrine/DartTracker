@@ -94,9 +94,9 @@
 .multiplier-btn {
     flex: 1;
     padding: var(--spacing-sm) 0;
-    border: 2px solid var(--border-color);
+    border: 2px solid #999;
     background: white;
-    color: var(--text-dark);
+    color: #000;
     font-size: 0.85rem;
     font-weight: 700;
     border-radius: var(--radius-sm);
@@ -162,9 +162,9 @@
 .segment-btn {
     aspect-ratio: 1;
     padding: 0;
-    border: 2px solid var(--border-color);
+    border: 2px solid #999;
     background: white;
-    color: var(--text-dark);
+    color: #000;
     font-size: 0.7rem;
     font-weight: 700;
     border-radius: var(--radius-sm);
@@ -195,8 +195,8 @@
 /* Bouton OUT (MISS) - même taille que les autres boutons */
 .out-btn {
     background: white;
-    color: var(--text-dark);
-    border-color: var(--border-color);
+    color: #000;
+    border-color: #999;
     font-size: 0.7rem;
 }
 
