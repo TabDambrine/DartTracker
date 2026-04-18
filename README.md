@@ -23,7 +23,7 @@ Une Progressive Web App (PWA) pour tracker et analyser les statistiques de jeux 
 
 1. **Cloner le projet**
 ```bash
-git clone [https://github.com/tabdambrine/DartTracker.git](https://github.com/TabDambrine/DartTracker.git)
+git clone https://github.com/tabdambrine/DartTracker.git
 cd dart-stats-tracker
 ```
 
