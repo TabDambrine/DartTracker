@@ -15,6 +15,8 @@ Une Progressive Web App (PWA) pour tracker et analyser les statistiques de jeux 
   - Top 10 coups préférés avec pourcentages
   - Meilleur score de finish
   - Double préféré pour finir les matchs
+- **Export/Import JSON**: Sauvegarde et restauration complète des données (joueurs et matchs)
+- **PWA Auto-Reload**: Notification et rechargement automatique lors des mises à jour
 - **Offline-first**: Fonctionne sans connexion internet via Service Worker
 - **Responsive design**: Optimisé pour mobile, tablet et desktop
 - **Données locales**: Stockage via localStorage du navigateur
@@ -64,16 +66,28 @@ Vous pouvez supprimer un joueur à tout moment, même s'il a des matchs!
 dart-stats-tracker/
 ├── index.html           # Application shell
 ├── manifest.json        # Configuration PWA
-├── service-worker.js    # Cache et offline
+├── service-worker.js    # Cache, offline et auto-reload
 ├── css/
-│   └── styles.css       # Styles vanilla responsifs
+│   ├── variables.css    # Variables CSS
+│   ├── layout.css       # Structure de base
+│   ├── components.css   # Composants UI (inclut boutons export/import)
+│   ├── players.css      # Styles gestion des joueurs
+│   ├── game.css         # Styles des matchs
+│   ├── throws.css       # Styles des lancers
+│   ├── matches.css      # Styles de l'historique
+│   ├── stats.css        # Styles des statistiques
+│   ├── utils.css        # Utilitaires CSS
+│   └── responsive.css   # Design responsive
 └── js/
-    ├── app.js           # Orchestration
+    ├── app.js           # Orchestration principale
     ├── storage.js       # localStorage wrapper
     ├── players.js       # Gestion des joueurs
     ├── games.js         # Logique des matchs
     ├── rules.js         # Validation des règles
     ├── stats.js         # Calcul des statistiques
+    ├── finishes.js       # Gestion des finishes
+    ├── throws-input.js   # Saisie des lancers
+    ├── export.js        # Export/Import JSON (nouveau!)
     └── ui.js            # Gestion de l'interface
 ```
 
@@ -87,12 +101,20 @@ dart-stats-tracker/
 
 ## 📝 Notes de Développement
 
-Ce projet a été entièrement développé avec l'aide de **GitHub Copilot**, mettant l'accent sur:
+Ce projet a été développé avec l'aide de **GitHub Copilot** et **Mistral Vibe**, mettant l'accent sur:
 - Code modulaire avec pattern IIFE
 - Validation robuste côté client
 - Gestion d'état sans frameworks
 - Persistance via localStorage
 - Design responsive vanilla CSS
+- Fonctionnalités avancées de PWA (Service Worker, cache, auto-reload)
+- Export/Import des données en JSON avec validation
+
+### Contributions récentes (Mistral Vibe)
+- **Export/Import JSON**: Module complet pour la sauvegarde et restauration des données
+- **PWA Auto-Reload**: Système de notification et rechargement automatique des mises à jour
+- **Améliorations Service Worker**: Gestion avancée du cache et détection des nouvelles versions
+- **Intégration UI**: Boutons d'export/import et notifications utilisateur
 
 ## 📄 Licence
 
@@ -106,6 +128,23 @@ Vous êtes libre de:
 - ✅ Le commercialiser
 
 Voir [LICENSE](LICENSE) pour les détails complets.
+
+## 📥 Export/Import des Données
+
+### Export
+- Exporte toutes les données (joueurs et matchs) au format JSON
+- Inclut la version de l'application et la date d'export
+- Génère un fichier nommé `DartStatsTracker_export_YYYY-MM-DD.json`
+
+### Import
+- Importe les données depuis un fichier JSON valide
+- Validation automatique du format et des données
+- Conservation de l'historique complet
+- Notification du nombre de joueurs et matchs importés
+
+### Utilisation
+1. **Exporter**: Cliquez sur le bouton "Exporter" dans l'écran d'accueil
+2. **Importer**: Cliquez sur le bouton "Importer" et sélectionnez un fichier JSON
 
 ## 📖 Spécifications Complètes
 
@@ -133,4 +172,4 @@ L'application calcule automatiquement:
 
 ---
 
-**Fait avec ❤️ et l'aide de GitHub Copilot** 🤖
+**Fait avec ❤️ et l'aide de [GitHub Copilot](https://github.com/features/copilot) et [Mistral Vibe](https://mistral.ai/)** 🤖
