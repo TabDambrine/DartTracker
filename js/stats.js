@@ -31,10 +31,16 @@ const Stats = (() => {
      * Calcule la moyenne des scores par volée (averageRoundScore)
      * Basé sur tous les matchs du joueur, volées valides uniquement
      * Ignore les matchs où un joueur a été supprimé ou en DNF
+     * Optionnel: filtre par gameType
      */
-    const calculateAverageRoundScore = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateAverageRoundScore = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => !hasDeletedPlayer(match) && !isDNF(match) && !isSelfPlayMatch(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
 
         let totalScore = 0;
         let validRoundsCount = 0;
@@ -57,10 +63,17 @@ const Stats = (() => {
      * Calcule le taux de réussite au double (finishDoubleSuccessRate)
      * % de matchs où le joueur finit sur la première fléchette avec un double
      * Ignore les matchs où un joueur a été supprimé
+     * Optionnel: filtre par gameType
      */
-    const calculateFinishDoubleSuccessRate = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateFinishDoubleSuccessRate = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => !hasDeletedPlayer(match) && !isSelfPlayMatch(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const wonMatches = matches.filter(m => m.winner === playerId);
 
         if (wonMatches.length === 0) return 0;
@@ -93,10 +106,17 @@ const Stats = (() => {
      * Collecte toutes les fléchettes lancées et compte les occurrences
      * Filtre les MISS (segment = 0 ou -1)
      * Ignore les matchs où un joueur a été supprimé
+     * Optionnel: filtre par gameType
      */
-    const collectAllThrows = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const collectAllThrows = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => !hasDeletedPlayer(match) && !isSelfPlayMatch(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const throwsMap = new Map(); // key: "segment-multiplier", value: {segment, multiplier, count}
 
         matches.forEach(match => {
@@ -132,11 +152,17 @@ const Stats = (() => {
      * Calcule les top 10 des fléchettes préférées (topThrows)
      * Inclut le pourcentage d'utilisation
      * Ignore les matchs où un joueur a été supprimé ou en DNF
+     * Optionnel: filtre par gameType
      */
-    const calculateTopThrows = (playerId) => {
-        const throwsMap = collectAllThrows(playerId);
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateTopThrows = (playerId, gameType = null) => {
+        const throwsMap = collectAllThrows(playerId, gameType);
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => !hasDeletedPlayer(match) && !isDNF(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
 
         // Compter le total de fléchettes lancées
         let totalDarts = 0;
@@ -170,10 +196,17 @@ const Stats = (() => {
      * Le score le plus élevé de la volée finale avec laquelle le joueur a remporté une partie
      * Par exemple: si joueur gagne en finissant avec une volée de 80 points, c'est un finish de 80
      * Ignore les matchs où un joueur a été supprimé ou en DNF
+     * Optionnel: filtre par gameType
      */
-    const calculateBestFinishingScore = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateBestFinishingScore = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => !hasDeletedPlayer(match) && !isDNF(match) && !isSelfPlayMatch(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const wonMatches = matches.filter(m => m.winner === playerId);
 
         if (wonMatches.length === 0) return 0;
@@ -205,10 +238,23 @@ const Stats = (() => {
     /**
      * Collecte les doubles utilisés pour finir les matchs gagnés
      * Ignore les matchs où un joueur a été supprimé, en DNF, ou self-play
+     * Optionnel: filtre par gameType. Si null, prend tous les matchs (y compris entraînement)
      */
-    const collectFinishingDoubles = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match) && !isSelfPlayMatch(match));
+    const collectFinishingDoubles = (playerId, gameType = null, includeTraining = false) => {
+        let matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match));
+        
+        // Si on veut inclure l'entraînement, on ne filtre pas les self-play
+        // Sinon, on filtre les self-play
+        if (!includeTraining) {
+            matches = matches.filter(match => !isSelfPlayMatch(match));
+        }
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const wonMatches = matches.filter(m => m.winner === playerId);
         const doublesMap = new Map(); // key: "segment", value: {segment, multiplier: 2, count}
 
@@ -249,9 +295,13 @@ const Stats = (() => {
 
     /**
      * Calcule le double préféré pour finish (preferredFinishingDouble)
+     * Par défaut, prend tous les matchs (compétition + entraînement) pour le double global
+     * Optionnel: filtre par gameType
      */
-    const calculatePreferredFinishingDouble = (playerId) => {
-        const doublesMap = collectFinishingDoubles(playerId);
+    const calculatePreferredFinishingDouble = (playerId, gameType = null) => {
+        // Pour le double favori global, on inclut tous les matchs (y compris entraînement)
+        const includeTraining = true;
+        const doublesMap = collectFinishingDoubles(playerId, gameType, includeTraining);
         
         if (doublesMap.size === 0) return null;
 
@@ -288,19 +338,41 @@ const Stats = (() => {
         const player = Storage.getPlayerById(playerId);
         if (!player) return false;
 
-        const matches = Storage.getPlayerMatches(playerId);
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => !hasDeletedPlayer(match) && !isSelfPlayMatch(match));
 
-        // Calculer les stats basiques
+        // Calculer les stats basiques (global)
         const wins = matches.filter(m => m.winner === playerId).length;
         const totalMatches = matches.length;
         const losses = totalMatches - wins;
 
-        // Calculer les stats détaillées
+        // Calculer les stats détaillées (global)
         const averageRoundScore = calculateAverageRoundScore(playerId);
         const finishDoubleSuccessRate = calculateFinishDoubleSuccessRate(playerId);
         const topThrows = calculateTopThrows(playerId);
         const bestFinishingScore = calculateBestFinishingScore(playerId);
+        // Le double favori est global (tous types de matchs confondus)
         const preferredFinishingDouble = calculatePreferredFinishingDouble(playerId);
+
+        // Calculer les stats par type de jeu
+        const byGameType = {};
+        ['301', '501'].forEach(gameType => {
+            const gameMatches = matches.filter(m => m.gameType === gameType);
+            const gameWins = gameMatches.filter(m => m.winner === playerId).length;
+            const gameLosses = gameMatches.length - gameWins;
+
+            byGameType[gameType] = {
+                totalMatches: gameMatches.length,
+                wins: gameWins,
+                losses: gameLosses,
+                averageRoundScore: parseFloat(calculateAverageRoundScore(playerId, gameType).toFixed(2)),
+                finishDoubleSuccessRate: parseFloat(calculateFinishDoubleSuccessRate(playerId, gameType).toFixed(1)),
+                bestFinishingScore: calculateBestFinishingScore(playerId, gameType),
+                topThrows: calculateTopThrows(playerId, gameType),
+                // Pour le double favori par type de jeu, on filtre par gameType mais on inclut tous les matchs
+                preferredFinishingDouble: calculatePreferredFinishingDouble(playerId, gameType)
+            };
+        });
 
         // Mettre à jour le joueur
         const updatedStats = {
@@ -311,7 +383,8 @@ const Stats = (() => {
             finishDoubleSuccessRate: parseFloat(finishDoubleSuccessRate.toFixed(1)),
             bestFinishingScore,
             topThrows,
-            preferredFinishingDouble
+            preferredFinishingDouble,
+            byGameType
         };
 
         return Storage.updatePlayerStats(playerId, updatedStats);
@@ -340,6 +413,26 @@ const Stats = (() => {
         const bestFinishingScore = calculateBestFinishingScoreTraining(playerId);
         const preferredFinishingDouble = calculatePreferredFinishingDoubleTraining(playerId);
 
+        // Calculer les stats par type de jeu pour l'entraînement
+        const byGameType = {};
+        ['301', '501'].forEach(gameType => {
+            const gameMatches = matches.filter(m => m.gameType === gameType);
+            const gameFinished = gameMatches.filter(m => m.winner !== null && !m.isDNF).length;
+            const gameUnfinished = gameMatches.filter(m => m.isDNF === true).length;
+
+            byGameType[gameType] = {
+                totalMatches: gameMatches.length,
+                finished: gameFinished,
+                unfinished: gameUnfinished,
+                dnf: gameUnfinished,
+                averageRoundScore: parseFloat(calculateAverageRoundScoreTraining(playerId, gameType).toFixed(2)),
+                finishDoubleSuccessRate: parseFloat(calculateFinishDoubleSuccessRateTraining(playerId, gameType).toFixed(1)),
+                bestFinishingScore: calculateBestFinishingScoreTraining(playerId, gameType),
+                topThrows: calculateTopThrowsTraining(playerId, gameType),
+                preferredFinishingDouble: calculatePreferredFinishingDoubleTraining(playerId, gameType)
+            };
+        });
+
         // Mettre à jour les stats d'entraînement
         const updatedTrainingStats = {
             totalMatches,
@@ -350,7 +443,8 @@ const Stats = (() => {
             finishDoubleSuccessRate: parseFloat(finishDoubleSuccessRate.toFixed(1)),
             bestFinishingScore,
             topThrows,
-            preferredFinishingDouble
+            preferredFinishingDouble,
+            byGameType
         };
 
         return Storage.updatePlayerTrainingStats(playerId, updatedTrainingStats);
@@ -358,10 +452,16 @@ const Stats = (() => {
 
     /**
      * Calcule la moyenne des scores par volée pour l'entraînement
+     * Optionnel: filtre par gameType
      */
-    const calculateAverageRoundScoreTraining = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateAverageRoundScoreTraining = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
 
         let totalScore = 0;
         let validRoundsCount = 0;
@@ -380,10 +480,17 @@ const Stats = (() => {
 
     /**
      * Calcule le taux de réussite au double pour l'entraînement
+     * Optionnel: filtre par gameType
      */
-    const calculateFinishDoubleSuccessRateTraining = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateFinishDoubleSuccessRateTraining = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const finishedMatches = matches.filter(m => m.winner !== null && !m.isDNF);
 
         if (finishedMatches.length === 0) return 0;
@@ -408,10 +515,17 @@ const Stats = (() => {
 
     /**
      * Collecte les fléchettes pour l'entraînement
+     * Optionnel: filtre par gameType
      */
-    const collectAllThrowsTraining = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const collectAllThrowsTraining = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const throwsMap = new Map();
 
         matches.forEach(match => {
@@ -442,11 +556,17 @@ const Stats = (() => {
 
     /**
      * Calcule les top 10 des fléchettes préférées pour l'entraînement
+     * Optionnel: filtre par gameType
      */
-    const calculateTopThrowsTraining = (playerId) => {
-        const throwsMap = collectAllThrowsTraining(playerId);
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateTopThrowsTraining = (playerId, gameType = null) => {
+        const throwsMap = collectAllThrowsTraining(playerId, gameType);
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
 
         let totalDarts = 0;
         matches.forEach(match => {
@@ -474,10 +594,17 @@ const Stats = (() => {
 
     /**
      * Calcule le meilleur score de finish pour l'entraînement
+     * Optionnel: filtre par gameType
      */
-    const calculateBestFinishingScoreTraining = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const calculateBestFinishingScoreTraining = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const finishedMatches = matches.filter(m => m.winner !== null);
 
         if (finishedMatches.length === 0) return 0;
@@ -505,10 +632,17 @@ const Stats = (() => {
 
     /**
      * Collecte les doubles de finition pour l'entraînement
+     * Optionnel: filtre par gameType
      */
-    const collectFinishingDoublesTraining = (playerId) => {
-        const matches = Storage.getPlayerMatches(playerId)
+    const collectFinishingDoublesTraining = (playerId, gameType = null) => {
+        let matches = Storage.getPlayerMatches(playerId)
             .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+        
+        // Filtrer par gameType si spécifié
+        if (gameType) {
+            matches = matches.filter(match => match.gameType === gameType);
+        }
+        
         const finishedMatches = matches.filter(m => m.winner !== null && !m.isDNF);
         const doublesMap = new Map();
 
@@ -545,9 +679,10 @@ const Stats = (() => {
 
     /**
      * Calcule le double préféré pour l'entraînement
+     * Optionnel: filtre par gameType
      */
-    const calculatePreferredFinishingDoubleTraining = (playerId) => {
-        const doublesMap = collectFinishingDoublesTraining(playerId);
+    const calculatePreferredFinishingDoubleTraining = (playerId, gameType = null) => {
+        const doublesMap = collectFinishingDoublesTraining(playerId, gameType);
 
         if (doublesMap.size === 0) return null;
 
@@ -581,18 +716,41 @@ const Stats = (() => {
         const player = Storage.getPlayerById(playerId);
         if (!player) return null;
 
+        // Stats globales
+        const globalStats = {
+            matchesInfo: `${player.stats.totalMatches} (${player.stats.wins} wins, ${player.stats.losses} losses)`,
+            winRate: player.stats.totalMatches > 0 ? ((player.stats.wins / player.stats.totalMatches) * 100).toFixed(1) : '0',
+            averageRoundScore: (player.stats.averageRoundScore || 0).toFixed(1),
+            finishDoubleSuccessRate: (player.stats.finishDoubleSuccessRate || 0).toFixed(1),
+            bestFinishingScore: player.stats.bestFinishingScore || 'N/A',
+            topThrows: player.stats.topThrows || [],
+            preferredFinishingDouble: player.stats.preferredFinishingDouble || null
+        };
+
+        // Stats par type de jeu
+        const byGameType = {};
+        if (player.stats.byGameType) {
+            ['301', '501'].forEach(gameType => {
+                const gameStats = player.stats.byGameType[gameType];
+                if (gameStats) {
+                    byGameType[gameType] = {
+                        matchesInfo: `${gameStats.totalMatches} (${gameStats.wins} wins, ${gameStats.losses} losses)`,
+                        winRate: gameStats.totalMatches > 0 ? ((gameStats.wins / gameStats.totalMatches) * 100).toFixed(1) : '0',
+                        averageRoundScore: (gameStats.averageRoundScore || 0).toFixed(1),
+                        finishDoubleSuccessRate: (gameStats.finishDoubleSuccessRate || 0).toFixed(1),
+                        bestFinishingScore: gameStats.bestFinishingScore || 'N/A',
+                        topThrows: gameStats.topThrows || [],
+                        preferredFinishingDouble: gameStats.preferredFinishingDouble || null
+                    };
+                }
+            });
+        }
+
         return {
             player,
             stats: player.stats,
-            displayStats: {
-                matchesInfo: `${player.stats.totalMatches} (${player.stats.wins} wins, ${player.stats.losses} losses)`,
-                winRate: player.stats.totalMatches > 0 ? ((player.stats.wins / player.stats.totalMatches) * 100).toFixed(1) : '0',
-                averageRoundScore: (player.stats.averageRoundScore || 0).toFixed(1),
-                finishDoubleSuccessRate: (player.stats.finishDoubleSuccessRate || 0).toFixed(1),
-                bestFinishingScore: player.stats.bestFinishingScore || 'N/A',
-                topThrows: player.stats.topThrows || [],
-                preferredFinishingDouble: player.stats.preferredFinishingDouble || null
-            }
+            displayStats: globalStats,
+            byGameType: byGameType
         };
     };
 
@@ -612,21 +770,48 @@ const Stats = (() => {
             finishDoubleSuccessRate: 0,
             bestFinishingScore: 0,
             topThrows: [],
-            preferredFinishingDouble: null
+            preferredFinishingDouble: null,
+            byGameType: {
+                '301': {},
+                '501': {}
+            }
         };
+
+        // Stats globales d'entraînement
+        const globalTrainingStats = {
+            matchesInfo: `${trainingStats.totalMatches} (${trainingStats.finished} finished, ${trainingStats.unfinished} unfinished)`,
+            finishRate: trainingStats.totalMatches > 0 ? ((trainingStats.finished / trainingStats.totalMatches) * 100).toFixed(1) : '0',
+            averageRoundScore: (trainingStats.averageRoundScore || 0).toFixed(1),
+            finishDoubleSuccessRate: (trainingStats.finishDoubleSuccessRate || 0).toFixed(1),
+            bestFinishingScore: trainingStats.bestFinishingScore || 'N/A',
+            topThrows: trainingStats.topThrows || [],
+            preferredFinishingDouble: trainingStats.preferredFinishingDouble || null
+        };
+
+        // Stats par type de jeu pour l'entraînement
+        const byGameType = {};
+        if (trainingStats.byGameType) {
+            ['301', '501'].forEach(gameType => {
+                const gameStats = trainingStats.byGameType[gameType];
+                if (gameStats) {
+                    byGameType[gameType] = {
+                        matchesInfo: `${gameStats.totalMatches} (${gameStats.finished} finished, ${gameStats.unfinished} unfinished)`,
+                        finishRate: gameStats.totalMatches > 0 ? ((gameStats.finished / gameStats.totalMatches) * 100).toFixed(1) : '0',
+                        averageRoundScore: (gameStats.averageRoundScore || 0).toFixed(1),
+                        finishDoubleSuccessRate: (gameStats.finishDoubleSuccessRate || 0).toFixed(1),
+                        bestFinishingScore: gameStats.bestFinishingScore || 'N/A',
+                        topThrows: gameStats.topThrows || [],
+                        preferredFinishingDouble: gameStats.preferredFinishingDouble || null
+                    };
+                }
+            });
+        }
 
         return {
             player,
             trainingStats: trainingStats,
-            displayStats: {
-                matchesInfo: `${trainingStats.totalMatches} (${trainingStats.finished} finished, ${trainingStats.unfinished} unfinished)`,
-                finishRate: trainingStats.totalMatches > 0 ? ((trainingStats.finished / trainingStats.totalMatches) * 100).toFixed(1) : '0',
-                averageRoundScore: (trainingStats.averageRoundScore || 0).toFixed(1),
-                finishDoubleSuccessRate: (trainingStats.finishDoubleSuccessRate || 0).toFixed(1),
-                bestFinishingScore: trainingStats.bestFinishingScore || 'N/A',
-                topThrows: trainingStats.topThrows || [],
-                preferredFinishingDouble: trainingStats.preferredFinishingDouble || null
-            }
+            displayStats: globalTrainingStats,
+            byGameType: byGameType
         };
     };
 

@@ -230,3 +230,93 @@
     color: white;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
+
+/* Game Type Selector */
+.game-type-selector {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+}
+
+.game-type-selector .selector-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    white-space: nowrap;
+}
+
+.game-type-buttons {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.game-type-buttons .btn-game-type {
+    padding: var(--spacing-xs) var(--spacing-md);
+    border: 2px solid var(--border-color);
+    background: white;
+    color: var(--text-dark);
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 60px;
+}
+
+.game-type-buttons .btn-game-type:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+}
+
+.game-type-buttons .btn-game-type.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Stats Header */
+.stats-header {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.stats-header h3 {
+    font-size: 1.1rem;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+/* Game Type Indicator in Stats */
+.game-type-indicator {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-left: var(--spacing-xs);
+}
+
+.game-type-indicator.all {
+    background: var(--light-bg);
+    color: var(--text-dark);
+}
+
+.game-type-indicator.g501 {
+    background: #ffeaa7;
+    color: #8b4513;
+}
+
+.game-type-indicator.g301 {
+    background: #a8edea;
+    color: #006666;
+}
