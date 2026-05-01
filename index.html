@@ -60,6 +60,20 @@
                         Statistiques
                     </button>
                 </div>
+
+                <!-- Section Export/Import -->
+                <div class="export-import-section">
+                    <div class="export-import-buttons">
+                        <button id="btnExportData" class="btn btn-secondary" title="Exporter les données">
+                            <span class="icon">📥</span>
+                            Exporter
+                        </button>
+                        <button id="btnImportData" class="btn btn-secondary" title="Importer les données">
+                            <span class="icon">📤</span>
+                            Importer
+                        </button>
+                    </div>
+                </div>
             </main>
         </div>
 
@@ -268,6 +282,7 @@
     <script src="js/stats.js"></script>
     <script src="js/finishes.js"></script>
     <script src="js/throws-input.js"></script>
+    <script src="js/export.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
 
@@ -281,12 +296,118 @@
         }
 
         // Register Service Worker only on HTTP/HTTPS (not file://)
+        let serviceWorkerRegistration = null;
+        
         if ('serviceWorker' in navigator && (location.protocol === 'http:' || location.protocol === 'https:')) {
             navigator.serviceWorker.register('service-worker.js')
-                .then(reg => console.log('Service Worker enregistré'))
+                .then(reg => {
+                    console.log('Service Worker enregistré');
+                    serviceWorkerRegistration = reg;
+                    setupServiceWorkerUpdateListener(reg);
+                })
                 .catch(err => console.log('Service Worker enregistrement échoué:', err));
         } else if (location.protocol === 'file:') {
             console.log('Mode local (file://): Service Worker désactivé (normal pour développement)');
+        }
+
+        /**
+         * Configure l'écouteur pour les mises à jour du Service Worker
+         */
+        function setupServiceWorkerUpdateListener(registration) {
+            // Vérifier les mises à jour périodiquement
+            const updateInterval = 60 * 60 * 1000; // 1 heure
+            
+            const checkForUpdates = () => {
+                registration.update().catch(err => {
+                    console.log('Erreur lors de la vérification des mises à jour:', err);
+                });
+            };
+
+            // Vérifier au chargement
+            checkForUpdates();
+            
+            // Vérifier périodiquement
+            setInterval(checkForUpdates, updateInterval);
+
+            // Écouter les messages du Service Worker
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'NEW_VERSION_AVAILABLE') {
+                    console.log('Nouvelle version disponible:', event.data.message);
+                    showUpdateNotification(event.data.message);
+                }
+            });
+
+            // Écouter les changements d'état du Service Worker
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                
+                newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed') {
+                        // Une nouvelle version est installée
+                        console.log('Nouvelle version du Service Worker installée');
+                        showUpdateNotification('Une nouvelle version est disponible. Recharger pour l\'appliquer.');
+                    }
+                });
+            });
+        }
+
+        /**
+         * Affiche une notification de mise à jour
+         */
+        function showUpdateNotification(message) {
+            // Ne pas afficher si on est déjà en train de montrer une notification
+            if (document.getElementById('updateNotification')) {
+                return;
+            }
+
+            const notification = document.createElement('div');
+            notification.id = 'updateNotification';
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                font-family: inherit;
+                font-size: 14px;
+            `;
+
+            notification.innerHTML = `
+                <span>🔄 ${message}</span>
+                <button id="btnReloadNow" style="
+                    background: #e74c3c;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    font-size: 12px;
+                ">Recharger</button>
+            `;
+
+            document.body.appendChild(notification);
+
+            // Ajouter l'événement pour le bouton recharger
+            const btnReload = notification.querySelector('#btnReloadNow');
+            btnReload.addEventListener('click', () => {
+                window.location.reload();
+            });
+
+            // Auto-fermeture après 10 secondes si non cliqué
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 10000);
         }
     </script>
 </body>

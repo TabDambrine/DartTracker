@@ -7,8 +7,15 @@
     "orientation": "portrait-primary",
     "background_color": "#ffffff",
     "theme_color": "#1a1a2e",
-    "scope": "/",
+    "scope": "/DartTracker/",
+    "version": "2.0.0",
     "icons": [
+        {
+            "src": "favicon.ico",
+            "sizes": "64x64 128x128 256x256",
+            "type": "image/x-icon",
+            "purpose": "any"
+        },
         {
             "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><text x='50%' y='50%' font-size='100' text-anchor='middle' dominant-baseline='central'>🎯</text></svg>",
             "sizes": "192x192",

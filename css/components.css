@@ -179,3 +179,28 @@
     margin-bottom: var(--spacing-md);
     border-left: 4px solid var(--danger-color);
 }
+
+/* Export/Import Section */
+
+.export-import-section {
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.export-import-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.export-import-buttons .btn {
+    flex: 1;
+    min-width: 120px;
+    max-width: 150px;
+}
+
+.export-import-buttons .icon {
+    font-size: 1.2rem;
+}

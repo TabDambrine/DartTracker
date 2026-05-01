@@ -56,6 +56,63 @@ const App = (() => {
             UI.renderStats();
             UI.showScreen('statsScreen');
         });
+
+        // Export/Import events
+        const btnExport = document.getElementById('btnExportData');
+        if (btnExport) {
+            btnExport.addEventListener('click', handleExportData);
+        }
+
+        const btnImport = document.getElementById('btnImportData');
+        if (btnImport) {
+            btnImport.addEventListener('click', handleImportData);
+        }
+    };
+
+    /**
+     * Gère l'export des données
+     */
+    const handleExportData = async () => {
+        try {
+            const result = ExportImport.exportToFile();
+            if (result.success) {
+                UI.showSuccess('Données exportées avec succès!');
+            } else {
+                UI.showError(result.message);
+            }
+        } catch (err) {
+            UI.showError(`Erreur: ${err.message}`);
+        }
+    };
+
+    /**
+     * Gère l'import des données
+     */
+    const handleImportData = async () => {
+        try {
+            const confirmed = await UI.showConfirmModal(
+                'Importer des données',
+                'Êtes-vous sûr de vouloir importer des données? Cela écrasera vos données actuelles (joueurs et matchs).'
+            );
+
+            if (!confirmed) return;
+
+            const result = await ExportImport.openImportDialog();
+            
+            if (result.success) {
+                // Rafraîchir l'UI après l'import
+                UI.renderPlayersList();
+                UI.renderSelectPlayerOptions();
+                UI.renderMatchesList();
+                UI.renderStats();
+                
+                UI.showSuccess(result.message);
+            } else {
+                UI.showError(result.message);
+            }
+        } catch (err) {
+            UI.showError(`Erreur: ${err.message}`);
+        }
     };
 
     /**
