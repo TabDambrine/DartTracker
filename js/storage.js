@@ -49,6 +49,59 @@ const Storage = (() => {
                 };
                 needsUpdate = true;
             }
+            
+            // Migration pour byGameType
+            if (!player.stats.byGameType) {
+                player.stats.byGameType = {
+                    '301': {
+                        totalMatches: 0,
+                        wins: 0,
+                        losses: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    },
+                    '501': {
+                        totalMatches: 0,
+                        wins: 0,
+                        losses: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    }
+                };
+                needsUpdate = true;
+            }
+            
+            if (!player.trainingStats.byGameType) {
+                player.trainingStats.byGameType = {
+                    '301': {
+                        totalMatches: 0,
+                        finished: 0,
+                        unfinished: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    },
+                    '501': {
+                        totalMatches: 0,
+                        finished: 0,
+                        unfinished: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    }
+                };
+                needsUpdate = true;
+            }
         });
 
         if (needsUpdate) {
@@ -107,7 +160,29 @@ const Storage = (() => {
                 finishDoubleSuccessRate: 0,
                 bestFinishingScore: 0,
                 topThrows: [],
-                preferredFinishingDouble: null
+                preferredFinishingDouble: null,
+                byGameType: {
+                    '301': {
+                        totalMatches: 0,
+                        wins: 0,
+                        losses: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    },
+                    '501': {
+                        totalMatches: 0,
+                        wins: 0,
+                        losses: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    }
+                }
             },
             trainingStats: {
                 totalMatches: 0,
@@ -118,7 +193,29 @@ const Storage = (() => {
                 finishDoubleSuccessRate: 0,
                 bestFinishingScore: 0,
                 topThrows: [],
-                preferredFinishingDouble: null
+                preferredFinishingDouble: null,
+                byGameType: {
+                    '301': {
+                        totalMatches: 0,
+                        finished: 0,
+                        unfinished: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    },
+                    '501': {
+                        totalMatches: 0,
+                        finished: 0,
+                        unfinished: 0,
+                        averageRoundScore: 0,
+                        finishDoubleSuccessRate: 0,
+                        bestFinishingScore: 0,
+                        topThrows: [],
+                        preferredFinishingDouble: null
+                    }
+                }
             }
         };
         players.push(newPlayer);
