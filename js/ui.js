@@ -483,6 +483,13 @@ const UI = (() => {
             selectElement.addEventListener('change', renderStatsForPlayer);
         }
 
+        // Ajouter les événements des onglets
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.removeEventListener('click', handleTabSwitch);
+            btn.addEventListener('click', handleTabSwitch);
+        });
+
         // Afficher les stats du premier joueur par défaut
         if (players.length > 0) {
             renderStatsForPlayer();
@@ -492,11 +499,22 @@ const UI = (() => {
     };
 
     /**
+     * Gère le changement d'onglet stats
+     */
+    const handleTabSwitch = (e) => {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        renderStatsForPlayer();
+    };
+
+    /**
      * Affiche les stats du joueur sélectionné
      */
     const renderStatsForPlayer = () => {
         const selectElement = document.getElementById('playerStatsSelect');
         const container = document.getElementById('statsList');
+        const activeTab = document.querySelector('.tab-btn.active')?.getAttribute('data-tab') || 'competition';
         const playerId = selectElement ? selectElement.value : null;
 
         if (!playerId) {
@@ -510,6 +528,17 @@ const UI = (() => {
             return;
         }
 
+        if (activeTab === 'training') {
+            renderTrainingStatsForPlayer(container, playerId);
+        } else {
+            renderCompetitionStatsForPlayer(container, playerId);
+        }
+    };
+
+    /**
+     * Affiche les stats de compétition du joueur sélectionné
+     */
+    const renderCompetitionStatsForPlayer = (container, playerId) => {
         const formattedStats = Stats.getFormattedStats(playerId);
         if (!formattedStats) {
             container.innerHTML = '<p class="empty-state">Aucune donnée pour ce joueur</p>';
@@ -564,6 +593,100 @@ const UI = (() => {
                         <div class="stat">
                             <div class="stat-label">Taux victoire</div>
                             <div class="stat-value">${stats.winRate}%</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Moy/volée</div>
+                            <div class="stat-value">${stats.averageRoundScore}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Finish %</div>
+                            <div class="stat-value">${stats.finishDoubleSuccessRate}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meilleur Score de Finish -->
+                <div class="stats-section">
+                    <h4>🎯 Meilleur Finish</h4>
+                    <div class="best-score">
+                        <span class="score-value">${stats.bestFinishingScore}</span>
+                        <span class="score-label">pts</span>
+                    </div>
+                </div>
+
+                <!-- Top 5 Coups -->
+                <div class="stats-section">
+                    <h4>📊 Top 5 Coups</h4>
+                    ${topThrowsHtml}
+                </div>
+
+                <!-- Double Préféré -->
+                <div class="stats-section">
+                    <h4>🎯 Double Préféré</h4>
+                    ${preferredDoubleHtml}
+                </div>
+            </div>
+        `;
+    };
+
+    /**
+     * Affiche les stats d'entraînement du joueur sélectionné
+     */
+    const renderTrainingStatsForPlayer = (container, playerId) => {
+        const formattedStats = Stats.getFormattedTrainingStats(playerId);
+        if (!formattedStats) {
+            container.innerHTML = '<p class="empty-state">Aucune donnée pour ce joueur</p>';
+            return;
+        }
+
+        const stats = formattedStats.displayStats;
+
+        // Formater les coups préférés
+        let topThrowsHtml = '<div class="top-throws">';
+        if (stats.topThrows.length === 0) {
+            topThrowsHtml += '<p class="no-data">Pas de données</p>';
+        } else {
+            topThrowsHtml += stats.topThrows.slice(0, 5).map((t, i) => {
+                const throwDisplay = Rules.formatThrow({ segment: t.segment, multiplier: t.multiplier });
+                return `<div class="throw-stat">
+                    <span class="rank">${i + 1}</span>
+                    <span class="throw-name">${throwDisplay}</span>
+                    <span class="count">${t.count}x</span>
+                </div>`;
+            }).join('');
+        }
+        topThrowsHtml += '</div>';
+
+        // Formater le double préféré
+        let preferredDoubleHtml = '<div class="preferred-double">';
+        if (stats.preferredFinishingDouble) {
+            const doubleDisplay = Rules.formatThrow({ 
+                segment: stats.preferredFinishingDouble.segment, 
+                multiplier: 2 
+            });
+            preferredDoubleHtml += `
+                <div class="double-info">
+                    <span class="double-name">${doubleDisplay}</span>
+                    <span class="double-stats">${stats.preferredFinishingDouble.count}x</span>
+                </div>
+            `;
+        } else {
+            preferredDoubleHtml += '<p class="no-data">Pas de finish réalisé</p>';
+        }
+        preferredDoubleHtml += '</div>';
+
+        container.innerHTML = `
+            <div class="stats-card">
+                <!-- Stats Basiques -->
+                <div class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <div class="stat-label">Matchs</div>
+                            <div class="stat-value">${stats.matchesInfo}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Taux finish</div>
+                            <div class="stat-value">${stats.finishRate}%</div>
                         </div>
                         <div class="stat">
                             <div class="stat-label">Moy/volée</div>

@@ -195,6 +195,21 @@
                     <label for="playerStatsSelect" class="selector-label">Joueur:</label>
                     <select id="playerStatsSelect" class="form-input"></select>
                 </div>
+                <!-- Bouton recalcul -->
+                <div class="recalculate-section">
+                    <button id="btnRecalculateStats" class="btn btn-secondary" title="Recalculer les stats">
+                        🔄 Recalculer les stats
+                    </button>
+                </div>
+                <!-- Onglets stats -->
+                <div class="stats-tabs">
+                    <button id="btnCompetitionStats" class="tab-btn active" data-tab="competition">
+                        🏆 Compétition
+                    </button>
+                    <button id="btnTrainingStats" class="tab-btn" data-tab="training">
+                        💪 Entraînement
+                    </button>
+                </div>
                 <!-- Affichage des stats -->
                 <div id="statsList" class="stats-list"></div>
             </main>

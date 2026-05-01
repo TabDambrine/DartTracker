@@ -13,13 +13,46 @@ const Storage = (() => {
     const VERSION = '1.0.0';
 
     /**
-     * Initialise le stockage
+     * Initialise le stockage et effectue les migrations si nécessaire
      */
     const init = () => {
         if (!get(KEYS.APP_VERSION)) {
             set(KEYS.APP_VERSION, VERSION);
             set(KEYS.PLAYERS, []);
             set(KEYS.MATCHES, []);
+        } else {
+            // Effectuer les migrations si nécessaire
+            migrateIfNeeded();
+        }
+    };
+
+    /**
+     * Effectue les migrations de schéma si nécessaire
+     * Ajoute trainingStats aux joueurs existants
+     */
+    const migrateIfNeeded = () => {
+        const players = getPlayers();
+        let needsUpdate = false;
+
+        players.forEach(player => {
+            if (!player.trainingStats) {
+                player.trainingStats = {
+                    totalMatches: 0,
+                    finished: 0,
+                    unfinished: 0,
+                    dnf: 0,
+                    averageRoundScore: 0,
+                    finishDoubleSuccessRate: 0,
+                    bestFinishingScore: 0,
+                    topThrows: [],
+                    preferredFinishingDouble: null
+                };
+                needsUpdate = true;
+            }
+        });
+
+        if (needsUpdate) {
+            set(KEYS.PLAYERS, players);
         }
     };
 
@@ -70,6 +103,17 @@ const Storage = (() => {
                 wins: 0,
                 losses: 0,
                 dnf: 0,  // Compteur de DNF (Did Not Finish)
+                averageRoundScore: 0,
+                finishDoubleSuccessRate: 0,
+                bestFinishingScore: 0,
+                topThrows: [],
+                preferredFinishingDouble: null
+            },
+            trainingStats: {
+                totalMatches: 0,
+                finished: 0,
+                unfinished: 0,
+                dnf: 0,
                 averageRoundScore: 0,
                 finishDoubleSuccessRate: 0,
                 bestFinishingScore: 0,
@@ -156,13 +200,30 @@ const Storage = (() => {
     };
 
     /**
-     * Met à jour les stats d'un joueur
+     * Met à jour les stats d'un joueur (stats de compétition)
      */
     const updatePlayerStats = (playerId, stats) => {
         const players = getPlayers();
         const player = players.find(p => p.id === playerId);
         if (player) {
             player.stats = { ...player.stats, ...stats };
+            set(KEYS.PLAYERS, players);
+            return true;
+        }
+        return false;
+    };
+
+    /**
+     * Met à jour les stats d'entraînement d'un joueur
+     */
+    const updatePlayerTrainingStats = (playerId, trainingStats) => {
+        const players = getPlayers();
+        const player = players.find(p => p.id === playerId);
+        if (player) {
+            if (!player.trainingStats) {
+                player.trainingStats = {};
+            }
+            player.trainingStats = { ...player.trainingStats, ...trainingStats };
             set(KEYS.PLAYERS, players);
             return true;
         }
@@ -251,6 +312,8 @@ const Storage = (() => {
         cleanOrphanMatches,
         clearAll,
         generateId,
+        migrateIfNeeded,
+        updatePlayerTrainingStats,
         KEYS
     };
 })();

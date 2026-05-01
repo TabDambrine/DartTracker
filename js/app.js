@@ -330,6 +330,33 @@ const App = (() => {
         document.getElementById('btnBackFromStats').addEventListener('click', () => {
             UI.showScreen('homeScreen');
         });
+
+        const btnRecalculate = document.getElementById('btnRecalculateStats');
+        if (btnRecalculate) {
+            btnRecalculate.addEventListener('click', () => {
+                recalculateAllStats();
+            });
+        }
+    };
+
+    /**
+     * Recalcule toutes les statistiques
+     */
+    const recalculateAllStats = async () => {
+        const confirmed = await UI.showConfirmModal(
+            'Recalculer les stats',
+            'Êtes-vous sûr ? Cette opération recalculera les statistiques de tous les joueurs selon leurs matchs.'
+        );
+
+        if (!confirmed) return;
+
+        try {
+            const count = Stats.recalculateAllStats();
+            UI.showSuccess(`Statistiques recalculées pour ${count} joueur(s)`);
+            UI.renderStats();
+        } catch (err) {
+            UI.showError(`Erreur: ${err.message}`);
+        }
     };
 
     /**

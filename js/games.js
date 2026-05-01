@@ -130,8 +130,12 @@ const Games = (() => {
             // Sauvegarder le match
             Storage.addMatch(currentMatch);
 
-            // Mettre à jour les stats seulement si ce n'est pas un self-play
-            if (!currentMatch.isSelfPlay) {
+            // Mettre à jour les stats en fonction du type de match
+            if (currentMatch.isSelfPlay) {
+                // Mise à jour des stats d'entraînement pour le self-play
+                Stats.updatePlayerTrainingStats(currentMatch.playerIds[playerIndex]);
+            } else {
+                // Mise à jour des stats de compétition
                 Players.updateAfterMatch(currentMatch.playerIds[playerIndex], true);
                 Players.updateAfterMatch(currentMatch.playerIds[1 - playerIndex], false);
 
@@ -165,8 +169,10 @@ const Games = (() => {
                 // Sauvegarder le match DNF
                 Storage.addMatch(currentMatch);
 
-                // Mettre à jour le comptage de DNF pour les joueurs seulement si ce n'est pas un self-play
-                if (!currentMatch.isSelfPlay) {
+                // Mettre à jour le comptage de DNF en fonction du type de match
+                if (currentMatch.isSelfPlay) {
+                    Stats.updatePlayerTrainingStats(currentMatch.playerIds[0]);
+                } else {
                     Players.recordDNF(currentMatch.playerIds[0]);
                     Players.recordDNF(currentMatch.playerIds[1]);
                 }
@@ -239,12 +245,14 @@ const Games = (() => {
                 // Sauvegarder le match DNF
                 Storage.addMatch(currentMatch);
 
-                // Mettre à jour le comptage de DNF pour les joueurs
-                if (!currentMatch.isTraining) {
+                // Mettre à jour le comptage de DNF
+                if (currentMatch.isSelfPlay) {
+                    // DNF d'entraînement
+                    Stats.updatePlayerTrainingStats(currentMatch.playerIds[0]);
+                } else {
+                    // DNF de compétition
                     Players.recordDNF(currentMatch.playerIds[0]);
                     Players.recordDNF(currentMatch.playerIds[1]);
-                } else {
-                    Players.recordDNF(currentMatch.playerIds[0]);
                 }
 
                 return {

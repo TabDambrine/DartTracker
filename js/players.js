@@ -99,6 +99,18 @@ const Players = (() => {
         return Stats.getFormattedStats(playerId);
     };
 
+    /**
+     * Récupère les stats d'entraînement d'un joueur
+     */
+    const getTrainingStats = (playerId) => {
+        if (!Stats) {
+            console.warn('Module Stats non disponible');
+            return null;
+        }
+
+        return Stats.getFormattedTrainingStats(playerId);
+    };
+
     return {
         getAll,
         create,
@@ -106,6 +118,7 @@ const Players = (() => {
         remove,
         updateAfterMatch,
         recordDNF,
-        getStats
+        getStats,
+        getTrainingStats
     };
 })();

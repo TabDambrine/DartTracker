@@ -318,6 +318,263 @@ const Stats = (() => {
     };
 
     /**
+     * Recalcule TOUTES les statistiques d'entraînement d'un joueur
+     * Basées uniquement sur les matchs self-play
+     */
+    const updatePlayerTrainingStats = (playerId) => {
+        const player = Storage.getPlayerById(playerId);
+        if (!player) return false;
+
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+
+        // Calculer les stats basiques (finished = winner !== null, unfinished = isDNF)
+        const finished = matches.filter(m => m.winner !== null && !m.isDNF).length;
+        const unfinished = matches.filter(m => m.isDNF === true).length;
+        const totalMatches = matches.length;
+
+        // Calculer les stats détaillées pour l'entraînement
+        const averageRoundScore = calculateAverageRoundScoreTraining(playerId);
+        const finishDoubleSuccessRate = calculateFinishDoubleSuccessRateTraining(playerId);
+        const topThrows = calculateTopThrowsTraining(playerId);
+        const bestFinishingScore = calculateBestFinishingScoreTraining(playerId);
+        const preferredFinishingDouble = calculatePreferredFinishingDoubleTraining(playerId);
+
+        // Mettre à jour les stats d'entraînement
+        const updatedTrainingStats = {
+            totalMatches,
+            finished,
+            unfinished,
+            dnf: unfinished,
+            averageRoundScore: parseFloat(averageRoundScore.toFixed(2)),
+            finishDoubleSuccessRate: parseFloat(finishDoubleSuccessRate.toFixed(1)),
+            bestFinishingScore,
+            topThrows,
+            preferredFinishingDouble
+        };
+
+        return Storage.updatePlayerTrainingStats(playerId, updatedTrainingStats);
+    };
+
+    /**
+     * Calcule la moyenne des scores par volée pour l'entraînement
+     */
+    const calculateAverageRoundScoreTraining = (playerId) => {
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+
+        let totalScore = 0;
+        let validRoundsCount = 0;
+
+        matches.forEach(match => {
+            match.throws.forEach(throwRecord => {
+                if (throwRecord.isValid) {
+                    totalScore += throwRecord.roundTotal;
+                    validRoundsCount += 1;
+                }
+            });
+        });
+
+        return validRoundsCount > 0 ? totalScore / validRoundsCount : 0;
+    };
+
+    /**
+     * Calcule le taux de réussite au double pour l'entraînement
+     */
+    const calculateFinishDoubleSuccessRateTraining = (playerId) => {
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+        const finishedMatches = matches.filter(m => m.winner !== null && !m.isDNF);
+
+        if (finishedMatches.length === 0) return 0;
+
+        let finishDoubleCount = 0;
+
+        finishedMatches.forEach(match => {
+            const lastThrows = match.throws.sort((a, b) => b.timestamp - a.timestamp);
+            if (lastThrows.length > 0) {
+                const lastThrow = lastThrows[0];
+                if (lastThrow.throw && lastThrow.throw[0]) {
+                    const firstDart = lastThrow.throw[0];
+                    if (firstDart.multiplier === 2) {
+                        finishDoubleCount += 1;
+                    }
+                }
+            }
+        });
+
+        return finishedMatches.length > 0 ? (finishDoubleCount / finishedMatches.length) * 100 : 0;
+    };
+
+    /**
+     * Collecte les fléchettes pour l'entraînement
+     */
+    const collectAllThrowsTraining = (playerId) => {
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+        const throwsMap = new Map();
+
+        matches.forEach(match => {
+            match.throws.forEach(throwRecord => {
+                if (throwRecord.throw) {
+                    throwRecord.throw.forEach(dart => {
+                        if (dart.segment && dart.segment !== 0 && dart.segment !== -1) {
+                            const key = `${dart.segment}-${dart.multiplier}`;
+
+                            if (!throwsMap.has(key)) {
+                                throwsMap.set(key, {
+                                    segment: dart.segment,
+                                    multiplier: dart.multiplier,
+                                    count: 0
+                                });
+                            }
+
+                            const entry = throwsMap.get(key);
+                            entry.count += 1;
+                        }
+                    });
+                }
+            });
+        });
+
+        return throwsMap;
+    };
+
+    /**
+     * Calcule les top 10 des fléchettes préférées pour l'entraînement
+     */
+    const calculateTopThrowsTraining = (playerId) => {
+        const throwsMap = collectAllThrowsTraining(playerId);
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+
+        let totalDarts = 0;
+        matches.forEach(match => {
+            match.throws.forEach(throwRecord => {
+                if (throwRecord.throw) {
+                    totalDarts += throwRecord.throw.filter(d => d.segment && d.segment !== 0 && d.segment !== -1).length;
+                }
+            });
+        });
+
+        if (totalDarts === 0) return [];
+
+        const topThrows = Array.from(throwsMap.values())
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10)
+            .map(throw_ => ({
+                segment: throw_.segment,
+                multiplier: throw_.multiplier,
+                count: throw_.count,
+                percentage: (throw_.count / totalDarts) * 100
+            }));
+
+        return topThrows;
+    };
+
+    /**
+     * Calcule le meilleur score de finish pour l'entraînement
+     */
+    const calculateBestFinishingScoreTraining = (playerId) => {
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+        const finishedMatches = matches.filter(m => m.winner !== null);
+
+        if (finishedMatches.length === 0) return 0;
+
+        let bestScore = 0;
+
+        finishedMatches.forEach(match => {
+            const playerThrows = match.throws;
+
+            if (playerThrows.length > 0) {
+                for (let i = playerThrows.length - 1; i >= 0; i--) {
+                    const throwRecord = playerThrows[i];
+                    if (throwRecord.runningTotal === 0 && throwRecord.isValid) {
+                        if (throwRecord.roundTotal > bestScore) {
+                            bestScore = throwRecord.roundTotal;
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+
+        return bestScore;
+    };
+
+    /**
+     * Collecte les doubles de finition pour l'entraînement
+     */
+    const collectFinishingDoublesTraining = (playerId) => {
+        const matches = Storage.getPlayerMatches(playerId)
+            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+        const finishedMatches = matches.filter(m => m.winner !== null && !m.isDNF);
+        const doublesMap = new Map();
+
+        finishedMatches.forEach(match => {
+            const playerThrows = match.throws;
+
+            if (playerThrows.length > 0) {
+                const lastThrow = playerThrows[playerThrows.length - 1];
+                if (lastThrow.throw) {
+                    for (let i = lastThrow.throw.length - 1; i >= 0; i--) {
+                        const dart = lastThrow.throw[i];
+                        if (Rules.isDouble(dart) && dart.segment !== -1) {
+                            const key = dart.segment === 0 ? 'BULL' : `${dart.segment}`;
+
+                            if (!doublesMap.has(key)) {
+                                doublesMap.set(key, {
+                                    segment: dart.segment,
+                                    multiplier: dart.segment === 0 ? 50 : 2,
+                                    count: 0
+                                });
+                            }
+
+                            const entry = doublesMap.get(key);
+                            entry.count += 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
+        return doublesMap;
+    };
+
+    /**
+     * Calcule le double préféré pour l'entraînement
+     */
+    const calculatePreferredFinishingDoubleTraining = (playerId) => {
+        const doublesMap = collectFinishingDoublesTraining(playerId);
+
+        if (doublesMap.size === 0) return null;
+
+        let totalFinishs = 0;
+        doublesMap.forEach(double => {
+            totalFinishs += double.count;
+        });
+
+        let preferredDouble = null;
+        let maxCount = 0;
+
+        doublesMap.forEach(double => {
+            if (double.count > maxCount) {
+                maxCount = double.count;
+                preferredDouble = {
+                    segment: double.segment,
+                    multiplier: 2,
+                    count: double.count,
+                    percentage: (double.count / totalFinishs) * 100
+                };
+            }
+        });
+
+        return preferredDouble;
+    };
+
+    /**
      * Obtient les statistiques formatées pour l'affichage
      */
     const getFormattedStats = (playerId) => {
@@ -339,6 +596,59 @@ const Stats = (() => {
         };
     };
 
+    /**
+     * Obtient les statistiques d'entraînement formatées pour l'affichage
+     */
+    const getFormattedTrainingStats = (playerId) => {
+        const player = Storage.getPlayerById(playerId);
+        if (!player) return null;
+
+        const trainingStats = player.trainingStats || {
+            totalMatches: 0,
+            finished: 0,
+            unfinished: 0,
+            dnf: 0,
+            averageRoundScore: 0,
+            finishDoubleSuccessRate: 0,
+            bestFinishingScore: 0,
+            topThrows: [],
+            preferredFinishingDouble: null
+        };
+
+        return {
+            player,
+            trainingStats: trainingStats,
+            displayStats: {
+                matchesInfo: `${trainingStats.totalMatches} (${trainingStats.finished} finished, ${trainingStats.unfinished} unfinished)`,
+                finishRate: trainingStats.totalMatches > 0 ? ((trainingStats.finished / trainingStats.totalMatches) * 100).toFixed(1) : '0',
+                averageRoundScore: (trainingStats.averageRoundScore || 0).toFixed(1),
+                finishDoubleSuccessRate: (trainingStats.finishDoubleSuccessRate || 0).toFixed(1),
+                bestFinishingScore: trainingStats.bestFinishingScore || 'N/A',
+                topThrows: trainingStats.topThrows || [],
+                preferredFinishingDouble: trainingStats.preferredFinishingDouble || null
+            }
+        };
+    };
+
+    /**
+     * Recalcule TOUTES les statistiques (compétition et entraînement) pour tous les joueurs
+     * Utile pour les migrations ou réinitialisation des stats
+     */
+    const recalculateAllStats = () => {
+        const players = Storage.getPlayers();
+        let updatedCount = 0;
+
+        players.forEach(player => {
+            if (!player.id.includes('deleted')) {
+                updatePlayerStats(player.id);
+                updatePlayerTrainingStats(player.id);
+                updatedCount += 1;
+            }
+        });
+
+        return updatedCount;
+    };
+
     return {
         calculateAverageRoundScore,
         calculateFinishDoubleSuccessRate,
@@ -346,6 +656,14 @@ const Stats = (() => {
         calculateBestFinishingScore,
         calculatePreferredFinishingDouble,
         updatePlayerStats,
-        getFormattedStats
+        getFormattedStats,
+        updatePlayerTrainingStats,
+        calculateAverageRoundScoreTraining,
+        calculateFinishDoubleSuccessRateTraining,
+        calculateTopThrowsTraining,
+        calculateBestFinishingScoreTraining,
+        calculatePreferredFinishingDoubleTraining,
+        getFormattedTrainingStats,
+        recalculateAllStats
     };
 })();
