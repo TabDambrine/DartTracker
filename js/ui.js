@@ -490,6 +490,13 @@ const UI = (() => {
             btn.addEventListener('click', handleTabSwitch);
         });
 
+        // Ajouter les événements des boutons de type de jeu
+        const gameTypeBtns = document.querySelectorAll('.game-type-buttons .btn-game-type');
+        gameTypeBtns.forEach(btn => {
+            btn.removeEventListener('click', handleGameTypeSwitch);
+            btn.addEventListener('click', handleGameTypeSwitch);
+        });
+
         // Afficher les stats du premier joueur par défaut
         if (players.length > 0) {
             renderStatsForPlayer();
@@ -509,12 +516,24 @@ const UI = (() => {
     };
 
     /**
+     * Gère le changement de type de jeu
+     */
+    const handleGameTypeSwitch = (e) => {
+        const gameTypeBtns = document.querySelectorAll('.game-type-buttons .btn-game-type');
+        gameTypeBtns.forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        renderStatsForPlayer();
+    };
+
+    /**
      * Affiche les stats du joueur sélectionné
      */
     const renderStatsForPlayer = () => {
         const selectElement = document.getElementById('playerStatsSelect');
         const container = document.getElementById('statsList');
         const activeTab = document.querySelector('.tab-btn.active')?.getAttribute('data-tab') || 'competition';
+        const activeGameTypeBtn = document.querySelector('.game-type-buttons .btn-game-type.active');
+        const gameType = activeGameTypeBtn ? activeGameTypeBtn.getAttribute('data-game-type') : 'all';
         const playerId = selectElement ? selectElement.value : null;
 
         if (!playerId) {
@@ -529,23 +548,33 @@ const UI = (() => {
         }
 
         if (activeTab === 'training') {
-            renderTrainingStatsForPlayer(container, playerId);
+            renderTrainingStatsForPlayer(container, playerId, gameType);
         } else {
-            renderCompetitionStatsForPlayer(container, playerId);
+            renderCompetitionStatsForPlayer(container, playerId, gameType);
         }
     };
 
     /**
      * Affiche les stats de compétition du joueur sélectionné
      */
-    const renderCompetitionStatsForPlayer = (container, playerId) => {
+    const renderCompetitionStatsForPlayer = (container, playerId, gameType = 'all') => {
         const formattedStats = Stats.getFormattedStats(playerId);
         if (!formattedStats) {
             container.innerHTML = '<p class="empty-state">Aucune donnée pour ce joueur</p>';
             return;
         }
 
-        const stats = formattedStats.displayStats;
+        // Utiliser les stats par type de jeu si spécifié, sinon les stats globales
+        let stats;
+        if (gameType !== 'all' && formattedStats.byGameType && formattedStats.byGameType[gameType]) {
+            stats = formattedStats.byGameType[gameType];
+        } else {
+            stats = formattedStats.displayStats;
+        }
+
+        // Ajouter l'indicateur de type de jeu
+        const gameTypeLabel = gameType === 'all' ? 'Tous' : gameType;
+        const gameTypeClass = gameType === 'all' ? 'all' : `g${gameType}`;
 
         // Formater les coups préférés
         let topThrowsHtml = '<div class="top-throws">';
@@ -583,6 +612,10 @@ const UI = (() => {
 
         container.innerHTML = `
             <div class="stats-card">
+                <!-- En-tête avec type de jeu -->
+                <div class="stats-header">
+                    <h3>Statistiques <span class="game-type-indicator ${gameTypeClass}">${gameTypeLabel}</span></h3>
+                </div>
                 <!-- Stats Basiques -->
                 <div class="stats-section">
                     <div class="stats-grid">
@@ -632,14 +665,24 @@ const UI = (() => {
     /**
      * Affiche les stats d'entraînement du joueur sélectionné
      */
-    const renderTrainingStatsForPlayer = (container, playerId) => {
+    const renderTrainingStatsForPlayer = (container, playerId, gameType = 'all') => {
         const formattedStats = Stats.getFormattedTrainingStats(playerId);
         if (!formattedStats) {
             container.innerHTML = '<p class="empty-state">Aucune donnée pour ce joueur</p>';
             return;
         }
 
-        const stats = formattedStats.displayStats;
+        // Utiliser les stats par type de jeu si spécifié, sinon les stats globales
+        let stats;
+        if (gameType !== 'all' && formattedStats.byGameType && formattedStats.byGameType[gameType]) {
+            stats = formattedStats.byGameType[gameType];
+        } else {
+            stats = formattedStats.displayStats;
+        }
+
+        // Ajouter l'indicateur de type de jeu
+        const gameTypeLabel = gameType === 'all' ? 'Tous' : gameType;
+        const gameTypeClass = gameType === 'all' ? 'all' : `g${gameType}`;
 
         // Formater les coups préférés
         let topThrowsHtml = '<div class="top-throws">';
@@ -677,6 +720,10 @@ const UI = (() => {
 
         container.innerHTML = `
             <div class="stats-card">
+                <!-- En-tête avec type de jeu -->
+                <div class="stats-header">
+                    <h3>Statistiques <span class="game-type-indicator ${gameTypeClass}">${gameTypeLabel}</span></h3>
+                </div>
                 <!-- Stats Basiques -->
                 <div class="stats-section">
                     <div class="stats-grid">
