@@ -146,24 +146,21 @@ Voir [LICENSE](LICENSE) pour les détails complets.
 1. **Exporter**: Cliquez sur le bouton "Exporter" dans l'écran d'accueil
 2. **Importer**: Cliquez sur le bouton "Importer" et sélectionnez un fichier JSON
 
-## 📖 Spécifications Complètes
+## 📖 Spécifications Techniques
 
-Pour des détails techniques complets sur les règles, le modèle de données et les calculs statistiques, consultez [INSTRUCTIONS.md](INSTRUCTIONS.md).
+### Règles des Jeux
 
-## 🎮 Jeux Supportés
+#### 501
+- **Début**: 501 points
+- **Objectif**: Atteindre exactement 0 avec un double
+- **Règles**: Pas de dépassement (< 0 = volée invalide)
 
-### 501
-- Début: 501 points
-- Objectif: Atteindre exactement 0 avec un double
-- Règles: Pas de dépassement (< 0 = volée invalide)
+#### 301
+- **Début**: 301 points
+- **Objectif**: Identique au 501
 
-### 301
-- Début: 301 points
-- Sinon identique au 501
-
-## 💡 Exemples de Statistiques
-
-L'application calcule automatiquement:
+### Statistiques Calculées
+L'application calcule automatiquement pour chaque joueur:
 - **Moyenne par volée**: Somme des points valides / nombre de volées
 - **Taux finish double**: % de matchs terminés au double en 1ère fléchette
 - **Top coups**: Classement des segments/multiplicateurs les plus lancés
