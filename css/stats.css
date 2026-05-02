@@ -9,7 +9,7 @@
     gap: var(--spacing-sm);
     align-items: center;
     margin-bottom: var(--spacing-lg);
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow);
@@ -18,7 +18,7 @@
 .player-selector .selector-label {
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--text-dark);
+    color: var(--text-primary);
     white-space: nowrap;
 }
 
@@ -29,6 +29,8 @@
     border-radius: var(--radius-sm);
     font-size: 0.95rem;
     cursor: pointer;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 /* Stats List */
@@ -39,7 +41,7 @@
 }
 
 .stats-card {
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-md);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
@@ -73,7 +75,7 @@
 
 .stats-section h4 {
     font-size: 0.875rem;
-    color: var(--text-dark);
+    color: var(--text-primary);
     margin-bottom: var(--spacing-sm);
     display: flex;
     align-items: center;
@@ -88,19 +90,19 @@
     justify-content: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-md);
-    background: linear-gradient(135deg, #ffeaa7 0%, #fab1a0 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
     border-radius: var(--radius-md);
 }
 
 .score-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: var(--primary-color);
+    color: white;
 }
 
 .score-label {
     font-size: 0.75rem;
-    color: var(--text-dark);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 /* Top Throws */
@@ -116,7 +118,7 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-xs) var(--spacing-sm);
-    background: var(--light-bg);
+    background: var(--bg-tertiary);
     border-radius: var(--radius-sm);
     font-size: 0.85rem;
 }
@@ -129,12 +131,12 @@
 
 .throw-stat .throw-name {
     font-weight: 600;
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .throw-stat .count {
     text-align: right;
-    color: var(--text-light);
+    color: var(--text-secondary);
     font-size: 0.75rem;
 }
 
@@ -151,24 +153,24 @@
     align-items: center;
     gap: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
-    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    background: linear-gradient(135deg, #16213e 0%, #0f3460 100%);
     border-radius: var(--radius-sm);
 }
 
 .double-name {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--secondary-dark);
+    color: white;
 }
 
 .double-stats {
-    color: var(--text-dark);
+    color: rgba(255, 255, 255, 0.8);
     font-size: 0.75rem;
     text-align: right;
 }
 
 .no-data {
-    color: var(--text-light);
+    color: var(--text-secondary);
     font-style: italic;
     font-size: 0.85rem;
     padding: var(--spacing-md);
@@ -198,7 +200,7 @@
     grid-template-columns: 1fr 1fr;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-lg);
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-sm);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
@@ -207,8 +209,8 @@
 .tab-btn {
     padding: var(--spacing-md) var(--spacing-lg);
     border: none;
-    background: var(--light-bg);
-    color: var(--text-dark);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
     font-size: 0.95rem;
     font-weight: 600;
     border-radius: var(--radius-md);
@@ -228,7 +230,7 @@
 .tab-btn.active {
     background: var(--primary-color);
     color: white;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 /* Game Type Selector */
@@ -237,7 +239,7 @@
     gap: var(--spacing-sm);
     align-items: center;
     margin-bottom: var(--spacing-lg);
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow);
@@ -246,7 +248,7 @@
 .game-type-selector .selector-label {
     font-weight: 600;
     font-size: 0.9rem;
-    color: var(--text-dark);
+    color: var(--text-primary);
     white-space: nowrap;
 }
 
@@ -260,8 +262,8 @@
 .game-type-buttons .btn-game-type {
     padding: var(--spacing-xs) var(--spacing-md);
     border: 2px solid var(--border-color);
-    background: white;
-    color: var(--text-dark);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     font-size: 0.85rem;
     font-weight: 600;
     border-radius: var(--radius-md);
@@ -279,7 +281,7 @@
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Stats Header */
@@ -291,7 +293,7 @@
 
 .stats-header h3 {
     font-size: 1.1rem;
-    color: var(--text-dark);
+    color: var(--text-primary);
     margin: 0;
 }
 
