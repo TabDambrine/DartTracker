@@ -147,15 +147,42 @@
 /* Tablet and small desktop (481px - 768px) */
 @media (min-width: 481px) and (max-width: 768px) {
     .scores-board {
-        padding: var(--spacing-md);
+        padding: var(--spacing-sm);
+    }
+
+    .score-player {
+        padding: var(--spacing-xs);
     }
 
     .player-score {
-        font-size: 2.25rem;
+        font-size: 2rem;
+    }
+
+    .player-name {
+        font-size: 0.8rem;
     }
 
     .throws-history {
         max-height: 280px;
+    }
+}
+
+/* Large desktop (> 768px) */
+@media (min-width: 769px) {
+    .scores-board {
+        padding: var(--spacing-sm);
+    }
+
+    .score-player {
+        padding: var(--spacing-xs);
+    }
+
+    .player-score {
+        font-size: 2rem;
+    }
+
+    .player-name {
+        font-size: 0.8rem;
     }
 }
 
