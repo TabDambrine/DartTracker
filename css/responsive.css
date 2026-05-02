@@ -26,13 +26,87 @@
         padding: var(--spacing-lg) var(--spacing-md);
     }
 
+    .game-container {
+        gap: var(--spacing-md);
+    }
+
     .scores-board {
         grid-template-columns: 1fr;
         gap: var(--spacing-sm);
+        padding: var(--spacing-md);
+    }
+
+    .score-player {
+        padding: var(--spacing-sm);
+    }
+
+    .player-score {
+        font-size: 2rem;
+    }
+
+    .player-name {
+        font-size: 0.8rem;
+    }
+
+    .player-throws {
+        font-size: 0.75rem;
     }
 
     .vs-separator {
         display: none;
+    }
+
+    .throws-form {
+        padding: var(--spacing-md);
+    }
+
+    .throws-form h3 {
+        font-size: 1rem;
+    }
+
+    .score-info {
+        font-size: 0.85rem;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .throws-history {
+        max-height: 250px;
+        min-height: 200px;
+        padding: var(--spacing-md);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .throws-history h3 {
+        font-size: 0.9rem;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .throw-row {
+        font-size: 0.85rem;
+        padding: var(--spacing-sm) 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .throw-row:last-child {
+        border-bottom: none;
+    }
+
+    .throw-row .round-num {
+        min-width: 45px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .throw-row .total,
+    .throw-row .running {
+        min-width: 45px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .throw-row .scores {
+        font-size: 0.8rem;
     }
 
     .selector-controls {
@@ -67,6 +141,21 @@
 
     .double-stats {
         text-align: left;
+    }
+}
+
+/* Tablet and small desktop (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+    .scores-board {
+        padding: var(--spacing-md);
+    }
+
+    .player-score {
+        font-size: 2.25rem;
+    }
+
+    .throws-history {
+        max-height: 280px;
     }
 }
 

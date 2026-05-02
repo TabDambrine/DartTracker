@@ -91,8 +91,11 @@ const ThrowsInput = (() => {
         // Désactiver les multiplicateurs pour BULL (25, 50) et MISS (-1)
         const isBullOrMiss = throw_.segment === -1 || throw_.segment === 25 || throw_.segment === 50;
 
+        // Si un segment est sélectionné mais que le multiplicateur est null, le définir à 1 (Simple) par défaut
+        const effectiveMultiplier = (throw_.segment !== null && !isBullOrMiss && throw_.multiplier === null) ? 1 : throw_.multiplier;
+
         const multiplierBtns = MULTIPLIERS.map(m => `
-            <button class="multiplier-btn ${throw_.multiplier === m.value ? 'selected' : ''} ${isBullOrMiss ? 'disabled' : ''}" 
+            <button class="multiplier-btn ${effectiveMultiplier === m.value ? 'selected' : ''} ${isBullOrMiss ? 'disabled' : ''}" 
                     data-throw="${index}" data-multiplier="${m.value}"
                     title="${m.name}"
                     ${isBullOrMiss ? 'disabled' : ''}>
@@ -137,10 +140,10 @@ const ThrowsInput = (() => {
 
                 <div class="segment-selector">
                     <div class="segment-selector-label">Valeur</div>
-                    <div class="segment-grid">
+                    <div class="segment-grid segment-grid-main">
                         ${segmentGrid}
                     </div>
-                    <div class="segment-grid">
+                    <div class="segment-grid segment-grid-special">
                         ${specialBtns}
                     </div>
                 </div>

@@ -153,7 +153,9 @@
 }
 
 /* Grille des segments - utilise des proportions pour adapter la taille */
-.segment-grid {
+.segment-grid,
+.segment-grid-main,
+.segment-grid-special {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
     gap: 4px;
@@ -278,7 +280,8 @@
         min-height: 36px;
     }
 
-    .segment-grid {
+    .segment-grid-main,
+    .segment-grid-special {
         grid-template-columns: repeat(5, 1fr);
         gap: 3px;
     }
@@ -304,7 +307,8 @@
         font-size: 0.85rem;
     }
 
-    .segment-grid {
+    .segment-grid-main,
+    .segment-grid-special {
         grid-template-columns: repeat(6, 1fr);
         gap: 4px;
     }
@@ -317,8 +321,13 @@
 
 /* Écrans moyens (> 480px) */
 @media (min-width: 481px) {
-    .segment-grid {
-        grid-template-columns: repeat(8, 1fr);
+    .segment-grid-main {
+        grid-template-columns: repeat(10, 1fr);
+        gap: 4px;
+    }
+
+    .segment-grid-special {
+        grid-template-columns: repeat(3, 1fr);
         gap: 4px;
     }
 
@@ -334,9 +343,14 @@
 
 /* Écrans larges (tablette et desktop) */
 @media (min-width: 768px) {
-    .segment-grid {
-        grid-template-columns: repeat(11, 1fr);
-        gap: 5px;
+    .segment-grid-main {
+        grid-template-columns: repeat(20, 1fr);
+        gap: 4px;
+    }
+
+    .segment-grid-special {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
     }
 
     .segment-btn {
