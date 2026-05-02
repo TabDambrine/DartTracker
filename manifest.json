@@ -8,7 +8,7 @@
     "background_color": "#ffffff",
     "theme_color": "#1a1a2e",
     "scope": "/DartTracker/",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "icons": [
         {
             "src": "favicon.ico",
