@@ -15,7 +15,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     border: 1px solid var(--border-color);
@@ -24,11 +24,11 @@
 
 .player-info h4 {
     margin-bottom: var(--spacing-xs);
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .player-info small {
-    color: var(--text-light);
+    color: var(--text-secondary);
     font-size: 0.875rem;
 }
 
@@ -48,5 +48,5 @@
 .selection-col h3 {
     font-size: 1rem;
     margin-bottom: var(--spacing-sm);
-    color: var(--text-dark);
+    color: var(--text-primary);
 }

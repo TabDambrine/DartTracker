@@ -104,8 +104,8 @@
 
 .btn-game-type {
     padding: var(--spacing-md);
-    background-color: var(--light-bg);
-    color: var(--text-dark);
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
     border: 2px solid var(--border-color);
     font-weight: 600;
     font-size: 1.25rem;
@@ -127,7 +127,7 @@
     display: block;
     font-weight: 500;
     margin-bottom: var(--spacing-sm);
-    color: var(--text-dark);
+    color: var(--text-primary);
 }
 
 .form-input {
@@ -138,16 +138,18 @@
     font-size: 1rem;
     font-family: inherit;
     transition: all 0.2s;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .form-input:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
 }
 
 .form-input::placeholder {
-    color: var(--text-light);
+    color: var(--text-secondary);
 }
 
 /* Checkbox */
@@ -158,7 +160,7 @@
     gap: var(--spacing-md);
     cursor: pointer;
     user-select: none;
-    color: var(--text-dark);
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -172,8 +174,8 @@
 /* Error Message */
 
 .error-message {
-    background-color: #fadbd8;
-    color: #a93226;
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-md);

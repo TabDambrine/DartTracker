@@ -11,7 +11,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -20,10 +20,10 @@
 }
 
 .modal-content {
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-xl);
     border-radius: var(--radius-lg);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     max-width: 400px;
     width: 100%;
     text-align: center;
@@ -31,12 +31,12 @@
 
 .modal-content h3 {
     margin-bottom: var(--spacing-md);
-    color: var(--text-dark);
+    color: var(--text-primary);
     font-size: 1.25rem;
 }
 
 .modal-content p {
-    color: var(--text-light);
+    color: var(--text-secondary);
     margin-bottom: var(--spacing-lg);
     line-height: 1.5;
 }
@@ -58,7 +58,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(25, 26, 46, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -87,7 +87,7 @@
 
 .empty-state {
     text-align: center;
-    color: var(--text-light);
+    color: var(--text-secondary);
     padding: var(--spacing-xl);
     font-style: italic;
 }

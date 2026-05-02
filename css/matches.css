@@ -12,7 +12,7 @@
 }
 
 .match-item {
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
@@ -32,6 +32,7 @@
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-md);
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .match-players .player {
@@ -39,17 +40,18 @@
     padding: var(--spacing-sm);
     text-align: center;
     border-radius: var(--radius-md);
-    background: var(--light-bg);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
 }
 
 .match-players .player.winner {
-    background: #d5f4e6;
+    background: rgba(46, 204, 113, 0.2);
     color: var(--success-color);
     font-weight: 700;
 }
 
 .match-players .vs {
-    color: var(--text-light);
+    color: var(--text-secondary);
 }
 
 .match-meta {
@@ -58,7 +60,7 @@
     flex-wrap: wrap;
     gap: var(--spacing-sm);
     font-size: 0.875rem;
-    color: var(--text-light);
+    color: var(--text-secondary);
 }
 
 .game-type {
@@ -70,7 +72,7 @@
 }
 
 .date {
-    color: var(--text-light);
+    color: var(--text-secondary);
 }
 
 .winner {
@@ -81,7 +83,7 @@
 /* Match Detail */
 
 .match-detail {
-    background: white;
+    background: var(--bg-secondary);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
@@ -89,14 +91,14 @@
 
 .match-detail h3 {
     margin-bottom: var(--spacing-md);
-    color: var(--text-dark);
+    color: var(--text-primary);
     text-align: center;
     font-size: 1.25rem;
 }
 
 .game-info {
     text-align: center;
-    color: var(--text-light);
+    color: var(--text-secondary);
     margin-bottom: var(--spacing-lg);
     padding-bottom: var(--spacing-lg);
     border-bottom: 1px solid var(--border-color);

@@ -13,22 +13,23 @@
 
 /* Bloc d'une fléchette */
 .throw-block {
-    background: var(--light-bg);
+    background: var(--bg-secondary);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     border: 2px solid var(--border-color);
     transition: all 0.2s;
+    color: var(--text-primary);
 }
 
 .throw-block.editing {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
-    background: white;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2);
+    background: var(--bg-secondary);
 }
 
 .throw-block.completed {
-    background: var(--light-bg);
-    border-color: #27ae60;
+    background: var(--bg-tertiary);
+    border-color: var(--success-color);
     opacity: 0.85;
 }
 
@@ -44,7 +45,7 @@
 .throw-label {
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--text-light);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -58,7 +59,7 @@
 }
 
 .throw-block.completed .throw-summary {
-    color: #27ae60;
+    color: var(--success-color);
 }
 
 /* Sélecteurs avec cases clickables */
@@ -78,7 +79,7 @@
 .multiplier-selector-label {
     font-size: 0.65rem;
     font-weight: 700;
-    color: var(--text-light);
+    color: var(--text-secondary);
     text-transform: uppercase;
     padding-top: var(--spacing-sm);
     min-width: 32px;
@@ -94,9 +95,9 @@
 .multiplier-btn {
     flex: 1;
     padding: var(--spacing-sm) 0;
-    border: 2px solid #999;
-    background: white;
-    color: #000;
+    border: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     font-size: 0.85rem;
     font-weight: 700;
     border-radius: var(--radius-sm);
@@ -111,7 +112,7 @@
 
 .multiplier-btn:hover {
     border-color: var(--primary-color);
-    background: rgba(231, 76, 60, 0.05);
+    background: rgba(231, 76, 60, 0.1);
 }
 
 .multiplier-btn.selected {
@@ -127,14 +128,14 @@
 .multiplier-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    background: #ecf0f1;
-    color: var(--text-light);
-    border-color: #bdc3c7;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
 }
 
 .multiplier-btn:disabled:hover {
-    background: #ecf0f1;
-    border-color: #bdc3c7;
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
 }
 
 /* Sélection des valeurs (1-20, 25, 50) */
@@ -147,7 +148,7 @@
 .segment-selector-label {
     font-size: 0.65rem;
     font-weight: 700;
-    color: var(--text-light);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -164,9 +165,9 @@
 .segment-btn {
     aspect-ratio: 1;
     padding: 0;
-    border: 2px solid #999;
-    background: white;
-    color: #000;
+    border: 2px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     font-size: 0.7rem;
     font-weight: 700;
     border-radius: var(--radius-sm);
@@ -181,7 +182,7 @@
 
 .segment-btn:hover {
     border-color: var(--primary-color);
-    background: rgba(231, 76, 60, 0.05);
+    background: rgba(231, 76, 60, 0.1);
 }
 
 .segment-btn.selected {
@@ -196,21 +197,21 @@
 
 /* Bouton OUT (MISS) - même taille que les autres boutons */
 .out-btn {
-    background: white;
-    color: #000;
-    border-color: #999;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
     font-size: 0.7rem;
 }
 
 .out-btn:hover {
     border-color: var(--primary-color);
-    background: rgba(231, 76, 60, 0.05);
+    background: rgba(231, 76, 60, 0.1);
 }
 
 .out-btn.selected {
-    background: #c0392b;
+    background: var(--primary-dark);
     color: white;
-    border-color: #c0392b;
+    border-color: var(--primary-dark);
 }
 
 /* État compact (fléchette complétée) */

@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    background-color: var(--light-bg);
+    background-color: var(--bg-primary);
 }
 
 .screen {
@@ -23,7 +23,7 @@
     top: 0;
     left: 0;
     z-index: 10;
-    background-color: var(--light-bg);
+    background-color: var(--bg-primary);
 }
 
 .screen.active {
@@ -49,17 +49,20 @@
     font-size: 1.75rem;
     margin-bottom: var(--spacing-sm);
     font-weight: 700;
+    color: white;
 }
 
 .app-header h2 {
     font-size: 1.5rem;
     font-weight: 600;
+    color: white;
 }
 
 .app-header .subtitle {
     font-size: 0.875rem;
     opacity: 0.9;
     margin-top: var(--spacing-sm);
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .app-header.with-back {
@@ -92,6 +95,7 @@
     opacity: 0.9;
     margin-top: var(--spacing-sm);
     text-align: center;
+    color: var(--text-secondary);
 }
 
 /* Container */
