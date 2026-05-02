@@ -3,7 +3,7 @@
  * Pour supporter l'offline, la mise en cache et le rechargement automatique
  */
 
-const CACHE_NAME = 'dart-stats-v2';
+const CACHE_NAME = 'dart-stats-v2.0.1';
 const ASSETS = [
     '/',
     '/index.html',
@@ -132,7 +132,10 @@ self.addEventListener('message', event => {
 // Détection des nouvelles versions
 // Quand un nouveau SW est installé, il envoie un message aux clients
 self.addEventListener('install', event => {
-    // Déjà géré ci-dessus, mais on peut ajouter une logique supplémentaire
+    // Forcer le passage à l'activation immédiate pour éviter l'ancien SW
+    event.waitUntil(
+        self.skipWaiting()
+    );
 });
 
 // Fonction pour notifier les clients qu'une nouvelle version est disponible
@@ -152,7 +155,6 @@ const notifyClientsAboutUpdate = async () => {
 
 // Appeler la notification quand le SW est activé (après installation)
 self.addEventListener('activate', event => {
-    // Déjà géré ci-dessus, mais on peut ajouter la notification
     event.waitUntil(
         Promise.all([
             // Nettoyage du cache
@@ -160,6 +162,7 @@ self.addEventListener('activate', event => {
                 return Promise.all(
                     cacheNames.map(cacheName => {
                         if (cacheName !== CACHE_NAME) {
+                            console.log('[SW] Suppression du cache:', cacheName);
                             return caches.delete(cacheName);
                         }
                     })
@@ -167,6 +170,7 @@ self.addEventListener('activate', event => {
             }),
             // Notifier les clients
             notifyClientsAboutUpdate(),
+            // Prendre le contrôle des clients immédiatement
             self.clients.claim()
         ])
     );
