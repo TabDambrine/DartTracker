@@ -182,6 +182,8 @@ const ThrowsInput = (() => {
                     throwsState[throwIndex].multiplier = multiplier;
                 }
 
+                // Re-render immediately to show the selected multiplier
+                renderThrows();
                 checkAndAdvance(throwIndex);
             });
         });
