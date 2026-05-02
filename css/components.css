@@ -188,9 +188,6 @@
     margin-top: var(--spacing-xl);
     padding-top: var(--spacing-lg);
     border-top: 1px solid var(--border-color);
-    background-color: var(--bg-secondary);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-md);
 }
 
 .export-import-buttons {
