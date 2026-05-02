@@ -30,9 +30,9 @@ const ThrowsInput = (() => {
      */
     const resetThrows = () => {
         throwsState = [
-            { segment: null, multiplier: null, completed: false },
-            { segment: null, multiplier: null, completed: false },
-            { segment: null, multiplier: null, completed: false }
+            { segment: null, multiplier: 1, completed: false },
+            { segment: null, multiplier: 1, completed: false },
+            { segment: null, multiplier: 1, completed: false }
         ];
     };
 
@@ -91,8 +91,8 @@ const ThrowsInput = (() => {
         // Désactiver les multiplicateurs pour BULL (25, 50) et MISS (-1)
         const isBullOrMiss = throw_.segment === -1 || throw_.segment === 25 || throw_.segment === 50;
 
-        // Si un segment est sélectionné mais que le multiplicateur est null, le définir à 1 (Simple) par défaut
-        const effectiveMultiplier = (throw_.segment !== null && !isBullOrMiss && throw_.multiplier === null) ? 1 : throw_.multiplier;
+        // Forcer le multiplicateur à 1 pour BULL et MISS
+        const effectiveMultiplier = (isBullOrMiss) ? 1 : (throw_.multiplier || 1);
 
         const multiplierBtns = MULTIPLIERS.map(m => `
             <button class="multiplier-btn ${effectiveMultiplier === m.value ? 'selected' : ''} ${isBullOrMiss ? 'disabled' : ''}" 
