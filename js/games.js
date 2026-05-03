@@ -134,6 +134,8 @@ const Games = (() => {
             if (currentMatch.isSelfPlay) {
                 // Mise à jour des stats d'entraînement pour le self-play
                 Stats.updatePlayerTrainingStats(currentMatch.playerIds[playerIndex]);
+                // Mettre à jour les stats globales (y compris le double préféré qui inclut l'entraînement)
+                Stats.updatePlayerStats(currentMatch.playerIds[playerIndex]);
             } else {
                 // Mise à jour des stats de compétition
                 Players.updateAfterMatch(currentMatch.playerIds[playerIndex], true);
