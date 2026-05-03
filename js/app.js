@@ -53,7 +53,7 @@ const App = (() => {
         });
 
         document.getElementById('btnStats').addEventListener('click', () => {
-            UI.renderStats();
+            UI.initStatsPage();
             UI.showScreen('statsScreen');
         });
 
@@ -104,7 +104,10 @@ const App = (() => {
                 UI.renderPlayersList();
                 UI.renderSelectPlayerOptions();
                 UI.renderMatchesList();
-                UI.renderStats();
+                // Si on est sur la page stats, la rafraîchir
+                if (document.getElementById('statsScreen').classList.contains('active')) {
+                    UI.initStatsPage();
+                }
                 
                 UI.showSuccess(result.message);
             } else {
@@ -410,7 +413,10 @@ const App = (() => {
         try {
             const count = Stats.recalculateAllStats();
             UI.showSuccess(`Statistiques recalculées pour ${count} joueur(s)`);
-            UI.renderStats();
+            // Si on est sur la page stats, la rafraîchir
+            if (document.getElementById('statsScreen').classList.contains('active')) {
+                UI.initStatsPage();
+            }
         } catch (err) {
             UI.showError(`Erreur: ${err.message}`);
         }

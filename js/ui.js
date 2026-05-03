@@ -198,11 +198,81 @@ const UI = (() => {
     };
 
     /**
+     * Initialise la page des statistiques
+     */
+    const initStatsPage = () => {
+        // Initialiser le sélecteur de joueurs
+        const players = Formatters.formatPlayerOptions();
+        Renderers.renderStatsPlayerSelect(players);
+        
+        // Ajouter l'événement pour le changement de joueur
+        const selectElement = document.getElementById('playerStatsSelect');
+        if (selectElement) {
+            selectElement.addEventListener('change', () => {
+                renderStats(selectElement.value);
+            });
+        }
+        
+        // Ajouter les événements des onglets
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Retirer la classe active de tous les boutons
+                tabBtns.forEach(b => b.classList.remove('active'));
+                // Ajouter la classe active au bouton cliqué
+                btn.classList.add('active');
+                // Re-rendre les stats avec le bon type
+                const selectElement = document.getElementById('playerStatsSelect');
+                if (selectElement && selectElement.value) {
+                    const activeTab = btn.getAttribute('data-tab');
+                    if (activeTab === 'training') {
+                        const statsData = Formatters.formatTrainingStats(selectElement.value);
+                        Renderers.renderTrainingStats(statsData);
+                    } else {
+                        const statsData = Formatters.formatStats(selectElement.value);
+                        Renderers.renderStats(statsData);
+                    }
+                }
+            });
+        });
+        
+        // Ajouter les événements des boutons de type de jeu
+        const gameTypeBtns = document.querySelectorAll('.game-type-buttons .btn-game-type');
+        gameTypeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Retirer la classe active de tous les boutons
+                gameTypeBtns.forEach(b => b.classList.remove('active'));
+                // Ajouter la classe active au bouton cliqué
+                btn.classList.add('active');
+                // Re-rendre les stats avec le bon type de jeu
+                const selectElement = document.getElementById('playerStatsSelect');
+                if (selectElement && selectElement.value) {
+                    const activeTab = document.querySelector('.tab-btn.active');
+                    const tabType = activeTab ? activeTab.getAttribute('data-tab') : 'competition';
+                    if (tabType === 'training') {
+                        const statsData = Formatters.formatTrainingStats(selectElement.value);
+                        Renderers.renderTrainingStats(statsData);
+                    } else {
+                        const statsData = Formatters.formatStats(selectElement.value);
+                        Renderers.renderStats(statsData);
+                    }
+                }
+            });
+        });
+        
+        // Afficher les stats du premier joueur par défaut
+        if (players.length > 0) {
+            renderStats(players[0].id);
+        } else {
+            Renderers.renderStats(null);
+        }
+    };
+
+    /**
      * Rend les statistiques
      * @param {string} playerId - ID du joueur (optionnel)
      */
     const renderStats = (playerId = null) => {
-        // Pour l'instant, on affiche les stats du premier joueur
         const players = Players.getAll();
         const targetPlayerId = playerId || (players.length > 0 ? players[0].id : null);
         
@@ -211,8 +281,17 @@ const UI = (() => {
             return;
         }
         
-        const statsData = Formatters.formatStats(targetPlayerId);
-        Renderers.renderStats(statsData);
+        // Vérifier quel onglet est actif
+        const activeTab = document.querySelector('.tab-btn.active');
+        const tabType = activeTab ? activeTab.getAttribute('data-tab') : 'competition';
+        
+        if (tabType === 'training') {
+            const statsData = Formatters.formatTrainingStats(targetPlayerId);
+            Renderers.renderTrainingStats(statsData);
+        } else {
+            const statsData = Formatters.formatStats(targetPlayerId);
+            Renderers.renderStats(statsData);
+        }
     };
 
     /**
@@ -239,6 +318,7 @@ const UI = (() => {
         clearPlayerForm,
         updateThrowsForm,
         getThrowsFromForm,
+        initStatsPage,
         
         // Render functions
         renderPlayersList,

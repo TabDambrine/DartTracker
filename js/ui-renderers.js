@@ -199,6 +199,20 @@ const UIRenderers = (() => {
     };
 
     /**
+     * Initialise le sélecteur de joueurs pour les stats
+     * @param {Array} players - Liste des joueurs
+     */
+    const renderStatsPlayerSelect = (players) => {
+        const selectElement = document.getElementById('playerStatsSelect');
+        
+        if (!selectElement) return;
+        
+        selectElement.innerHTML = players.map(p => 
+            `<option value="${p.id}">${p.name}</option>`
+        ).join('');
+    };
+
+    /**
      * Rend les statistiques
      * @param {Object} statsData - Données de statistiques formatées
      */
@@ -217,7 +231,7 @@ const UIRenderers = (() => {
         container.innerHTML = `
             <div class="stats-header">
                 <h3>Statistiques de ${player.name}</h3>
-                <p>Membre depuis: ${new Date(player.createdAt).toLocaleDateString()}</p>
+                <p>Membre depuis: ${new Date(player.created).toLocaleDateString()}</p>
             </div>
             
             <div class="stats-section">
@@ -312,16 +326,106 @@ const UIRenderers = (() => {
         suggestionEl.style.display = 'block';
     };
 
+    /**
+     * Rend les statistiques d'entraînement
+     * @param {Object} statsData - Données de statistiques d'entraînement formatées
+     */
+    const renderTrainingStats = (statsData) => {
+        const container = document.getElementById('statsContainer');
+        
+        if (!statsData || !statsData.player) {
+            container.innerHTML = '<p class="empty-state">Aucun joueur sélectionné</p>';
+            return;
+        }
+
+        const player = statsData.player;
+        const stats = statsData.displayStats;
+        const byGameType = statsData.byGameType;
+
+        container.innerHTML = `
+            <div class="stats-header">
+                <h3>Statistiques d'entraînement de ${player.name}</h3>
+                <p>Membre depuis: ${new Date(player.created).toLocaleDateString()}</p>
+            </div>
+            
+            <div class="stats-section">
+                <h4>💪 Général</h4>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Matchs joués</div>
+                        <div class="stat-value">${stats.matchesInfo}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Taux de finish</div>
+                        <div class="stat-value">${stats.finishRate}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Moyenne par volée</div>
+                        <div class="stat-value">${stats.averageRoundScore}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Meilleur finish</div>
+                        <div class="stat-value">${stats.bestFinishingScore}</div>
+                    </div>
+                </div>
+            </div>
+            
+            ${stats.preferredFinishingDouble ? `
+            <div class="stats-section">
+                <h4>🎯 Double Préféré</h4>
+                <div class="double-stats">
+                    <span class="double-name">Double ${stats.preferredFinishingDouble.segment === 0 ? 'BULL' : stats.preferredFinishingDouble.segment}</span>
+                    <span class="double-stats">${stats.preferredFinishingDouble.count}x</span>
+                    <span class="double-percentage">(${stats.preferredFinishingDouble.percentage.toFixed(1)}%)</span>
+                </div>
+            </div>
+            ` : ''}
+            
+            <div class="stats-section">
+                <h4>📈 Top 10 des fléchettes</h4>
+                <div class="top-throws">
+                    ${stats.topThrows.map((t, index) => `
+                        <div class="top-throw">
+                            <span class="rank">#${index + 1}</span>
+                            <span class="throw-name">
+                                ${t.multiplier === 2 ? 'D' : t.multiplier === 3 ? 'T' : ''}${t.segment}
+                            </span>
+                            <span class="throw-count">${t.count}x</span>
+                            <span class="throw-percentage">(${t.percentage.toFixed(1)}%)</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <div class="stats-section">
+                <h4>🎮 Par type de jeu</h4>
+                <div class="game-type-stats">
+                    ${Object.entries(byGameType).map(([gameType, gameStats]) => `
+                        <div class="game-type-stat">
+                            <h5>${gameType}</h5>
+                            <p>${gameStats.matchesInfo}</p>
+                            <p>Moyenne: ${gameStats.averageRoundScore}</p>
+                            <p>Taux de finish: ${gameStats.finishRate}%</p>
+                            <p>Meilleur finish: ${gameStats.bestFinishingScore}</p>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    };
+
     return {
         getPlayerName,
         renderPlayersList,
         renderSelectPlayerOptions,
+        renderStatsPlayerSelect,
         updateScoresBoard,
         updateThrowsHistory,
         formatDart,
         renderMatchesList,
         renderMatchDetail,
         renderStats,
+        renderTrainingStats,
         showFinishSuggestion
     };
 })();

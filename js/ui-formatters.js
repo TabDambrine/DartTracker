@@ -180,6 +180,25 @@ const UIFormatters = (() => {
         };
     };
 
+    /**
+     * Formate les stats d'entraînement
+     * @param {string} playerId - ID du joueur
+     * @returns {Object|null} - Stats d'entraînement formatées
+     */
+    const formatTrainingStats = (playerId) => {
+        const formattedStats = Stats.getFormattedTrainingStats(playerId);
+        
+        if (!formattedStats) {
+            return null;
+        }
+
+        return {
+            player: formattedStats.player,
+            displayStats: formattedStats.displayStats,
+            byGameType: formattedStats.byGameType
+        };
+    };
+
     return {
         formatPlayersList,
         formatPlayerOptions,
@@ -188,6 +207,7 @@ const UIFormatters = (() => {
         formatMatchesList,
         formatMatchDetail,
         formatStats,
+        formatTrainingStats,
         formatFinishSuggestion
     };
 })();
