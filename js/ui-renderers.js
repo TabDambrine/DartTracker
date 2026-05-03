@@ -148,15 +148,15 @@ const UIRenderers = (() => {
 
         container.innerHTML = matchesData.map(match => `
             <div class="match-item" data-match-id="${match.id}">
-                <div class="match-header">
-                    <span class="match-type">${match.gameType}</span>
-                    <span class="match-date">${match.date}</span>
+                <div class="match-meta">
+                    <span class="game-type">${match.gameType}</span>
+                    <span class="date">${match.date}</span>
                 </div>
                 <div class="match-players">
-                    ${match.players.join(' vs ')}
+                    ${match.players.map(p => `<span class="player">${p}</span>`).join(' <span class="vs">vs</span> ')}
                 </div>
                 <div class="match-result">
-                    ${match.winner ? `🏆 ${match.winner}` : match.isDNF ? '❌ DNF' : '⏳ En cours'}
+                    ${match.winner ? `<span class="winner">🏆 ${match.winner}</span>` : match.isDNF ? '❌ DNF' : '⏳ En cours'}
                 </div>
                 <button class="btn btn-small" data-view="${match.id}">Voir</button>
             </div>
@@ -171,29 +171,27 @@ const UIRenderers = (() => {
         const container = document.getElementById('matchDetailContainer');
         
         container.innerHTML = `
-            <div class="match-detail-header">
+            <div class="match-detail">
                 <h3>${matchDetail.gameType} Match</h3>
-                <p>${matchDetail.date} - ${matchDetail.players.join(' vs ')}</p>
-                <p class="match-result">${matchDetail.winner ? `🏆 Vainqueur: ${matchDetail.winner}` : matchDetail.isDNF ? '❌ DNF' : '⏳ En cours'}</p>
-            </div>
-            <div class="match-detail-throws">
-                ${matchDetail.throws.map(throwItem => `
-                    <div class="throw-record detail">
-                        <div class="throw-header">
-                            <span class="player-indicator">${throwItem.playerName}</span>
-                            <span class="round-indicator">Tour ${throwItem.round}</span>
-                            <span class="total-score">Total: ${throwItem.roundTotal}</span>
-                            <span class="running-total">Restant: ${throwItem.runningTotal}</span>
+                <div class="game-info">
+                    <p>${matchDetail.date} - ${matchDetail.players.join(' vs ')}</p>
+                    <p class="match-result">${matchDetail.winner ? `🏆 Vainqueur: ${matchDetail.winner}` : matchDetail.isDNF ? '❌ DNF' : '⏳ En cours'}</p>
+                </div>
+                <div class="throws-detailed">
+                    ${matchDetail.throws.map(throwItem => `
+                        <div class="player-throws">
+                            <h4>${throwItem.playerName} - Tour ${throwItem.round}</h4>
+                            <p>Total: ${throwItem.roundTotal} | Restant: ${throwItem.runningTotal}</p>
+                            <div class="throw-darts">
+                                ${throwItem.darts.map(dart => `
+                                    <span class="dart ${dart.multiplier === 2 ? 'double' : dart.multiplier === 3 ? 'triple' : ''}">
+                                        ${formatDart(dart)}
+                                    </span>
+                                `).join('')}
+                            </div>
                         </div>
-                        <div class="throw-darts">
-                            ${throwItem.darts.map(dart => `
-                                <span class="dart ${dart.multiplier === 2 ? 'double' : dart.multiplier === 3 ? 'triple' : ''}">
-                                    ${formatDart(dart)}
-                                </span>
-                            `).join('')}
-                        </div>
-                    </div>
-                `).join('')}
+                    `).join('')}
+                </div>
             </div>
         `;
     };
@@ -234,67 +232,69 @@ const UIRenderers = (() => {
                 <p>Membre depuis: ${new Date(player.created).toLocaleDateString()}</p>
             </div>
             
-            <div class="stats-section">
-                <h4>📊 Général</h4>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Matchs joués</div>
-                        <div class="stat-value">${stats.matchesInfo}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Taux de victoire</div>
-                        <div class="stat-value">${stats.winRate}%</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Moyenne par volée</div>
-                        <div class="stat-value">${stats.averageRoundScore}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Meilleur finish</div>
-                        <div class="stat-value">${stats.bestFinishingScore}</div>
-                    </div>
-                </div>
-            </div>
-            
-            ${stats.preferredFinishingDouble ? `
-            <div class="stats-section">
-                <h4>🎯 Double Préféré</h4>
-                <div class="double-stats">
-                    <span class="double-name">Double ${stats.preferredFinishingDouble.segment === 0 ? 'BULL' : stats.preferredFinishingDouble.segment}</span>
-                    <span class="double-stats">${stats.preferredFinishingDouble.count}x</span>
-                    <span class="double-percentage">(${stats.preferredFinishingDouble.percentage.toFixed(1)}%)</span>
-                </div>
-            </div>
-            ` : ''}
-            
-            <div class="stats-section">
-                <h4>📈 Top 10 des fléchettes</h4>
-                <div class="top-throws">
-                    ${stats.topThrows.map((t, index) => `
-                        <div class="top-throw">
-                            <span class="rank">#${index + 1}</span>
-                            <span class="throw-name">
-                                ${t.multiplier === 2 ? 'D' : t.multiplier === 3 ? 'T' : ''}${t.segment}
-                            </span>
-                            <span class="throw-count">${t.count}x</span>
-                            <span class="throw-percentage">(${t.percentage.toFixed(1)}%)</span>
+            <div class="stats-card">
+                <div class="stats-section">
+                    <h4>📊 Général</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Matchs joués</div>
+                            <div class="stat-value">${stats.matchesInfo}</div>
                         </div>
-                    `).join('')}
-                </div>
-            </div>
-            
-            <div class="stats-section">
-                <h4>🎮 Par type de jeu</h4>
-                <div class="game-type-stats">
-                    ${Object.entries(byGameType).map(([gameType, gameStats]) => `
-                        <div class="game-type-stat">
-                            <h5>${gameType}</h5>
-                            <p>${gameStats.matchesInfo}</p>
-                            <p>Moyenne: ${gameStats.averageRoundScore}</p>
-                            <p>Taux de victoire: ${gameStats.winRate}%</p>
-                            <p>Meilleur finish: ${gameStats.bestFinishingScore}</p>
+                        <div class="stat-card">
+                            <div class="stat-label">Taux de victoire</div>
+                            <div class="stat-value">${stats.winRate}%</div>
                         </div>
-                    `).join('')}
+                        <div class="stat-card">
+                            <div class="stat-label">Moyenne par volée</div>
+                            <div class="stat-value">${stats.averageRoundScore}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Meilleur finish</div>
+                            <div class="stat-value">${stats.bestFinishingScore}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${stats.preferredFinishingDouble ? `
+                <div class="stats-section">
+                    <h4>🎯 Double Préféré</h4>
+                    <div class="preferred-double">
+                        <div class="double-info">
+                            <span class="double-name">Double ${stats.preferredFinishingDouble.segment === 0 ? 'BULL' : stats.preferredFinishingDouble.segment}</span>
+                            <span class="double-stats">${stats.preferredFinishingDouble.count}x (${stats.preferredFinishingDouble.percentage.toFixed(1)}%)</span>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="stats-section">
+                    <h4>📈 Top 10 des fléchettes</h4>
+                    <div class="top-throws">
+                        ${stats.topThrows.map((t, index) => `
+                            <div class="throw-stat">
+                                <span class="rank">#${index + 1}</span>
+                                <span class="throw-name">
+                                    ${t.multiplier === 2 ? 'D' : t.multiplier === 3 ? 'T' : ''}${t.segment}
+                                </span>
+                                <span class="count">${t.count}x (${t.percentage.toFixed(1)}%)</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="stats-section">
+                    <h4>🎮 Par type de jeu</h4>
+                    <div class="stats-grid">
+                        ${Object.entries(byGameType).map(([gameType, gameStats]) => `
+                            <div class="stats-card">
+                                <h5>${gameType}</h5>
+                                <p>${gameStats.matchesInfo}</p>
+                                <p>Moyenne: ${gameStats.averageRoundScore}</p>
+                                <p>Taux de victoire: ${gameStats.winRate}%</p>
+                                <p>Meilleur finish: ${gameStats.bestFinishingScore}</p>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
         `;
@@ -348,67 +348,69 @@ const UIRenderers = (() => {
                 <p>Membre depuis: ${new Date(player.created).toLocaleDateString()}</p>
             </div>
             
-            <div class="stats-section">
-                <h4>💪 Général</h4>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-label">Matchs joués</div>
-                        <div class="stat-value">${stats.matchesInfo}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Taux de finish</div>
-                        <div class="stat-value">${stats.finishRate}%</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Moyenne par volée</div>
-                        <div class="stat-value">${stats.averageRoundScore}</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Meilleur finish</div>
-                        <div class="stat-value">${stats.bestFinishingScore}</div>
-                    </div>
-                </div>
-            </div>
-            
-            ${stats.preferredFinishingDouble ? `
-            <div class="stats-section">
-                <h4>🎯 Double Préféré</h4>
-                <div class="double-stats">
-                    <span class="double-name">Double ${stats.preferredFinishingDouble.segment === 0 ? 'BULL' : stats.preferredFinishingDouble.segment}</span>
-                    <span class="double-stats">${stats.preferredFinishingDouble.count}x</span>
-                    <span class="double-percentage">(${stats.preferredFinishingDouble.percentage.toFixed(1)}%)</span>
-                </div>
-            </div>
-            ` : ''}
-            
-            <div class="stats-section">
-                <h4>📈 Top 10 des fléchettes</h4>
-                <div class="top-throws">
-                    ${stats.topThrows.map((t, index) => `
-                        <div class="top-throw">
-                            <span class="rank">#${index + 1}</span>
-                            <span class="throw-name">
-                                ${t.multiplier === 2 ? 'D' : t.multiplier === 3 ? 'T' : ''}${t.segment}
-                            </span>
-                            <span class="throw-count">${t.count}x</span>
-                            <span class="throw-percentage">(${t.percentage.toFixed(1)}%)</span>
+            <div class="stats-card">
+                <div class="stats-section">
+                    <h4>💪 Général</h4>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Matchs joués</div>
+                            <div class="stat-value">${stats.matchesInfo}</div>
                         </div>
-                    `).join('')}
-                </div>
-            </div>
-            
-            <div class="stats-section">
-                <h4>🎮 Par type de jeu</h4>
-                <div class="game-type-stats">
-                    ${Object.entries(byGameType).map(([gameType, gameStats]) => `
-                        <div class="game-type-stat">
-                            <h5>${gameType}</h5>
-                            <p>${gameStats.matchesInfo}</p>
-                            <p>Moyenne: ${gameStats.averageRoundScore}</p>
-                            <p>Taux de finish: ${gameStats.finishRate}%</p>
-                            <p>Meilleur finish: ${gameStats.bestFinishingScore}</p>
+                        <div class="stat-card">
+                            <div class="stat-label">Taux de finish</div>
+                            <div class="stat-value">${stats.finishRate}%</div>
                         </div>
-                    `).join('')}
+                        <div class="stat-card">
+                            <div class="stat-label">Moyenne par volée</div>
+                            <div class="stat-value">${stats.averageRoundScore}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Meilleur finish</div>
+                            <div class="stat-value">${stats.bestFinishingScore}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${stats.preferredFinishingDouble ? `
+                <div class="stats-section">
+                    <h4>🎯 Double Préféré</h4>
+                    <div class="preferred-double">
+                        <div class="double-info">
+                            <span class="double-name">Double ${stats.preferredFinishingDouble.segment === 0 ? 'BULL' : stats.preferredFinishingDouble.segment}</span>
+                            <span class="double-stats">${stats.preferredFinishingDouble.count}x (${stats.preferredFinishingDouble.percentage.toFixed(1)}%)</span>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="stats-section">
+                    <h4>📈 Top 10 des fléchettes</h4>
+                    <div class="top-throws">
+                        ${stats.topThrows.map((t, index) => `
+                            <div class="throw-stat">
+                                <span class="rank">#${index + 1}</span>
+                                <span class="throw-name">
+                                    ${t.multiplier === 2 ? 'D' : t.multiplier === 3 ? 'T' : ''}${t.segment}
+                                </span>
+                                <span class="count">${t.count}x (${t.percentage.toFixed(1)}%)</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="stats-section">
+                    <h4>🎮 Par type de jeu</h4>
+                    <div class="stats-grid">
+                        ${Object.entries(byGameType).map(([gameType, gameStats]) => `
+                            <div class="stats-card">
+                                <h5>${gameType}</h5>
+                                <p>${gameStats.matchesInfo}</p>
+                                <p>Moyenne: ${gameStats.averageRoundScore}</p>
+                                <p>Taux de finish: ${gameStats.finishRate}%</p>
+                                <p>Meilleur finish: ${gameStats.bestFinishingScore}</p>
+                            </div>
+                        `).join('')}
+                    </div>
                 </div>
             </div>
         `;

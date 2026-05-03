@@ -189,7 +189,8 @@ const App = (() => {
 
             // Récupérer la limite de tours (null si vide, sinon entier positif)
             let roundLimit = null;
-            if (roundLimitInput.value.trim()) {
+            const roundLimitInput = document.getElementById('roundLimitInput');
+            if (roundLimitInput && roundLimitInput.value.trim()) {
                 roundLimit = parseInt(roundLimitInput.value);
                 if (isNaN(roundLimit) || roundLimit <= 0) {
                     UI.showError('La limite de tours doit être un nombre positif');
