@@ -274,6 +274,19 @@ const Stats = (() => {
      * Ignore les matchs où un joueur a été supprimé, en DNF, ou self-play
      * Optionnel: filtre par gameType. Si null, prend tous les matchs (y compris entraînement)
      */
+    const collectLastDoubleFromThrow = (throwRecord) => {
+        if (!throwRecord || !throwRecord.throw) return null;
+
+        for (let i = throwRecord.throw.length - 1; i >= 0; i--) {
+            const dart = throwRecord.throw[i];
+            if (Rules.isDouble(dart) && dart.segment !== -1) {
+                return dart;
+            }
+        }
+
+        return null;
+    };
+
     const collectFinishingDoubles = (playerId, gameType = null, includeTraining = false) => {
         let matches = Storage.getPlayerMatches(playerId)
             .filter(match => !hasDeletedPlayer(match));
@@ -293,6 +306,28 @@ const Stats = (() => {
         const doublesMap = new Map(); // key: "segment", value: {segment, multiplier: 2, count}
 
         wonMatches.forEach(match => {
+            if (match.isSelfPlay === true || isGhostMatch(match)) {
+                const humanThrows = match.throws.filter(t => t.isSimulated !== true);
+                const lastThrow = humanThrows.length > 0 ? humanThrows[humanThrows.length - 1] : null;
+                const dart = collectLastDoubleFromThrow(lastThrow);
+
+                if (!dart) return;
+
+                const key = dart.segment === 0 ? 'BULL' : `${dart.segment}`;
+
+                if (!doublesMap.has(key)) {
+                    doublesMap.set(key, {
+                        segment: dart.segment,
+                        multiplier: dart.segment === 0 ? 50 : 2,  // BULL = 50, autres = 2
+                        count: 0
+                    });
+                }
+
+                const entry = doublesMap.get(key);
+                entry.count += 1;
+                return;
+            }
+
             const playerIndex = match.playerIds.indexOf(playerId);
             const playerThrows = match.throws.filter(t => t.playerIndex === playerIndex);
 
