@@ -89,6 +89,22 @@
     box-shadow: var(--shadow);
 }
 
+.throws-form.simulating {
+    opacity: 0.75;
+    pointer-events: none;
+}
+
+.simulated-badge {
+    display: inline-block;
+    margin-left: var(--spacing-sm);
+    padding: 0.1rem 0.35rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
 .throws-form h3 {
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);

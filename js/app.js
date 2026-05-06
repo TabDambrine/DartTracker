@@ -1,27 +1,22 @@
 /**
  * App Module
- * Orchestration et gestion des events
+ * Orchestration et gestion des events.
  */
 
 const App = (() => {
     let selectedGameType = '501';
 
     const init = () => {
-        // Initialiser l'UI
         UI.renderPlayersList();
         UI.renderSelectPlayerOptions();
 
-        // Attacher les events du menu principal
         attachHomeScreenEvents();
-
-        // Attacher les events des autres écrans
         attachPlayersScreenEvents();
         attachSelectPlayersScreenEvents();
         attachGameScreenEvents();
         attachMatchesScreenEvents();
         attachStatsScreenEvents();
 
-        // Attacher l'event du bouton retour detail match
         const btnBackFromMatchDetail = document.getElementById('btnBackFromMatchDetail');
         if (btnBackFromMatchDetail) {
             btnBackFromMatchDetail.addEventListener('click', () => {
@@ -30,12 +25,9 @@ const App = (() => {
             });
         }
 
-        console.log('Dart Stats Tracker initialisé');
+        console.log('Dart Stats Tracker initialise');
     };
 
-    /**
-     * Events écran d'accueil
-     */
     const attachHomeScreenEvents = () => {
         document.getElementById('btnNewMatch').addEventListener('click', () => {
             UI.showScreen('selectPlayersScreen');
@@ -57,7 +49,6 @@ const App = (() => {
             UI.showScreen('statsScreen');
         });
 
-        // Export/Import events
         const btnExport = document.getElementById('btnExportData');
         if (btnExport) {
             btnExport.addEventListener('click', handleExportData);
@@ -69,14 +60,11 @@ const App = (() => {
         }
     };
 
-    /**
-     * Gère l'export des données
-     */
     const handleExportData = async () => {
         try {
             const result = ExportImport.exportToFile();
             if (result.success) {
-                UI.showSuccess('Données exportées avec succès!');
+                UI.showSuccess('Donnees exportees avec succes!');
             } else {
                 UI.showError(result.message);
             }
@@ -85,27 +73,22 @@ const App = (() => {
         }
     };
 
-    /**
-     * Gère l'import des données
-     */
     const handleImportData = async () => {
         try {
             const confirmed = await UI.showConfirmModal(
-                'Importer des données',
-                'Êtes-vous sûr de vouloir importer des données? Cela écrasera vos données actuelles (joueurs et matchs).'
+                'Importer des donnees',
+                'Etes-vous sur de vouloir importer des donnees? Cela ecrasera vos donnees actuelles (joueurs et matchs).'
             );
 
             if (!confirmed) return;
 
             const result = await ExportImport.openImportDialog();
-            
+
             if (result.success) {
-                // Rafraîchir l'UI après l'import
                 UI.renderPlayersList();
                 UI.renderSelectPlayerOptions();
                 UI.renderMatchesList();
                 UI.renderStats();
-                
                 UI.showSuccess(result.message);
             } else {
                 UI.showError(result.message);
@@ -115,9 +98,6 @@ const App = (() => {
         }
     };
 
-    /**
-     * Events écran gestion joueurs
-     */
     const attachPlayersScreenEvents = () => {
         const btnAdd = document.getElementById('btnAddPlayer');
         const input = document.getElementById('playerNameInput');
@@ -149,53 +129,48 @@ const App = (() => {
         });
     };
 
-    /**
-     * Events écran sélection joueurs
-     */
     const attachSelectPlayersScreenEvents = () => {
         const roundLimitInput = document.getElementById('roundLimitInput');
 
-        // Sélection du type de jeu
         document.querySelectorAll('.btn-game-type').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.btn-game-type').forEach(b => b.classList.remove('active'));
                 e.target.classList.add('active');
                 selectedGameType = e.target.dataset.game;
 
-                // Définir la limite par défaut selon le type de jeu
                 if (!roundLimitInput.value) {
                     roundLimitInput.placeholder = selectedGameType === '501' ? 'Ex: 15' : 'Ex: 10';
                 }
             });
         });
 
-        // Démarrer le match
         document.getElementById('btnStartMatch').addEventListener('click', () => {
             const player1Id = document.getElementById('player1Select').value;
             const player2Id = document.getElementById('player2Select').value;
+            const ghostMode = document.getElementById('ghostModeCheckbox')?.checked === true;
 
             if (!player1Id) {
-                UI.showError('Veuillez sélectionner le Joueur 1');
+                UI.showError('Veuillez selectionner le Joueur 1');
                 return;
             }
 
             if (!player2Id) {
-                UI.showError('Veuillez sélectionner le Joueur 2');
+                UI.showError('Veuillez selectionner le Joueur 2');
                 return;
             }
 
-            // Récupérer la limite de tours (null si vide, sinon entier positif)
             let roundLimit = null;
             if (roundLimitInput.value.trim()) {
                 roundLimit = parseInt(roundLimitInput.value);
                 if (isNaN(roundLimit) || roundLimit <= 0) {
-                    UI.showError('La limite de tours doit être un nombre positif');
+                    UI.showError('La limite de tours doit etre un nombre positif');
                     return;
                 }
             }
 
-            // Créer le match avec tous les paramètres
-            const match = Games.createMatch(player1Id, player2Id, selectedGameType, roundLimit);
+            const match = Games.createMatch(player1Id, player2Id, selectedGameType, roundLimit, {
+                mode: ghostMode ? 'ghost' : undefined
+            });
             startGame(match);
         });
 
@@ -204,33 +179,27 @@ const App = (() => {
         });
     };
 
-    /**
-     * Démarre un nouveau jeu
-     */
     const startGame = (match) => {
-        const gameTitle = `${match.gameType} - ${Games.getCurrentPlayer().name}`;
+        const gameTitle = match.isGhost
+            ? `${match.gameType} - Ghost de ${match.ghostProfileName}`
+            : `${match.gameType} - ${Games.getCurrentPlayer().name}`;
         document.getElementById('gameTitle').textContent = gameTitle;
 
         UI.updateScoresBoard();
+        UI.setThrowsFormEnabled(true);
         UI.updateThrowsForm();
         UI.updateThrowsHistory();
         UI.showScreen('gameScreen');
     };
 
-    /**
-     * Events écran de jeu
-     */
     const attachGameScreenEvents = () => {
-        // Soumission normale (3 fléchettes)
         document.getElementById('btnSubmitThrows').addEventListener('click', submitThrows);
-
-        // Soumission du finish partiel
         document.getElementById('btnSubmitPartialFinish').addEventListener('click', submitPartialFinish);
 
         document.getElementById('btnAbortMatch').addEventListener('click', async () => {
             const confirmed = await UI.showConfirmModal(
                 'Abandonner le match',
-                'Êtes-vous sûr ? Le match ne sera pas sauvegardé.'
+                'Etes-vous sur ? Le match ne sera pas sauvegarde.'
             );
 
             if (confirmed) {
@@ -238,48 +207,75 @@ const App = (() => {
                 UI.showScreen('homeScreen');
             }
         });
-
-        // Les événements des sélecteurs de fléchettes sont maintenant gérés dans ThrowsInput
-        // Aucune autre gestion nécessaire ici
     };
 
-    /**
-     * Soumet une volée
-     */
+    const finishMatchAndReturnHome = async (result) => {
+        if (result.isDNF) {
+            await UI.showMessageModal(
+                'Limite de Tours Atteinte',
+                'Match non termine (DNF - Did Not Finish)'
+            );
+        } else {
+            const winnerName = result.winner?.name || UI.getPlayerName(Games.getCurrentMatch()?.winner);
+            await UI.showMessageModal(
+                'Match Termine!',
+                `${winnerName} a remporte le match!`
+            );
+        }
+
+        Games.clearCurrentMatch();
+        UI.showScreen('homeScreen');
+    };
+
+    const playGhostTurnIfNeeded = async () => {
+        const match = Games.getCurrentMatch();
+        if (!match || !match.isGhost || match.currentPlayerIndex !== 1) {
+            return false;
+        }
+
+        UI.setThrowsFormEnabled(false, `Ghost de ${match.ghostProfileName} joue sa volee...`);
+
+        await new Promise(resolve => setTimeout(resolve, 450));
+
+        const result = Ghost.playTurn(match);
+        UI.updateScoresBoard();
+        UI.updateThrowsHistory();
+
+        if (result.finished) {
+            await finishMatchAndReturnHome(result);
+            return true;
+        }
+
+        UI.setThrowsFormEnabled(true);
+        UI.updateThrowsForm();
+        return true;
+    };
+
     const submitThrows = async () => {
         try {
             const throws = UI.getThrowsFromForm();
-
             const result = Games.addThrow(throws);
 
             if (!result.success) {
-                // La volée est invalide - proposer à l'utilisateur
                 const choice = await UI.showValidationOptions(
-                    `⚠️ ${result.reason}\n\nValider quand même comme erreur du joueur ?`
+                    `${result.reason}\n\nValider quand meme comme erreur du joueur ?`
                 );
 
                 if (choice === 'valid') {
-                    // Cliquez sur "Valider quand même" → enregistrer comme erreur
                     const errorResult = Games.addInvalidThrow(throws, result.reason);
                     UI.updateScoresBoard();
                     UI.updateThrowsHistory();
 
-                    // Vérifier si on a déclenché un DNF par cette volée invalide
-                    const currentMatch = Games.getCurrentMatch();
-                    if (currentMatch && currentMatch.isDNF) {
-                        // DNF déclenché
-                        await UI.showMessageModal(
-                            '⏱️ Limite de Tours Atteinte',
-                            'Match non terminé (DNF - Did Not Finish)'
-                        );
-                        Games.clearCurrentMatch();
-                        UI.showScreen('homeScreen');
+                    if (errorResult.finished) {
+                        await finishMatchAndReturnHome(errorResult);
                     } else {
-                        UI.updateThrowsForm();
+                        const ghostPlayed = await playGhostTurnIfNeeded();
+                        if (!ghostPlayed) {
+                            UI.updateThrowsForm();
+                        }
                     }
                 } else {
-                    // Cliquez sur "Corriger" → abandonner et laisser corriger
-                    UI.showThrowError('Veuillez corriger la volée');
+                    UI.showThrowError('Veuillez corriger la volee');
                 }
                 return;
             }
@@ -288,33 +284,18 @@ const App = (() => {
             UI.updateThrowsHistory();
 
             if (result.finished) {
-                if (result.isDNF) {
-                    // Match DNF
-                    await UI.showMessageModal(
-                        '⏱️ Limite de Tours Atteinte',
-                        'Match non terminé (DNF - Did Not Finish)'
-                    );
-                } else {
-                    // Match normal terminé
-                    const winner = result.winner;
-                    await UI.showMessageModal(
-                        '🎉 Match Terminé!',
-                        `${winner.name} a remporté le match!`
-                    );
-                }
-                Games.clearCurrentMatch();
-                UI.showScreen('homeScreen');
+                await finishMatchAndReturnHome(result);
             } else {
-                UI.updateThrowsForm();
+                const ghostPlayed = await playGhostTurnIfNeeded();
+                if (!ghostPlayed) {
+                    UI.updateThrowsForm();
+                }
             }
         } catch (err) {
             UI.showThrowError(err.message);
         }
     };
 
-    /**
-     * Soumet une volée partielle qui termine le match
-     */
     const submitPartialFinish = async () => {
         try {
             const match = Games.getCurrentMatch();
@@ -322,8 +303,6 @@ const App = (() => {
 
             const playerIndex = match.currentPlayerIndex;
             const currentScore = match.scores[playerIndex];
-
-            // Collecter les fléchettes jusqu'à trouver le finish (utilise ThrowsInput)
             const throwsState = ThrowsInput.getState();
             const partialThrows = [];
 
@@ -333,11 +312,9 @@ const App = (() => {
 
                 partialThrows.push({ segment: throw_.segment, multiplier: throw_.multiplier });
 
-                // Vérifier la validation partielle
                 const validation = Rules.validatePartialFinish(match.gameType, currentScore, partialThrows);
 
                 if (validation.finished) {
-                    // On a trouvé le finish - utiliser seulement ces fléchettes
                     const result = Games.addThrow(partialThrows);
 
                     if (!result.success) {
@@ -349,18 +326,13 @@ const App = (() => {
                     UI.updateThrowsHistory();
 
                     if (result.finished) {
-                        const winner = result.winner;
-                        await UI.showMessageModal(
-                            '🎉 Match Terminé!',
-                            `${winner.name} a remporté le match!`
-                        );
-                        Games.clearCurrentMatch();
-                        UI.showScreen('homeScreen');
+                        await finishMatchAndReturnHome(result);
                     }
                     return;
-                } else if (!validation.valid) {
-                    // Les fléchettes jusqu'ici ne sont pas valides
-                    UI.showThrowError('Erreur: volée invalide');
+                }
+
+                if (!validation.valid) {
+                    UI.showThrowError('Erreur: volee invalide');
                     return;
                 }
             }
@@ -371,18 +343,12 @@ const App = (() => {
         }
     };
 
-    /**
-     * Events écran historique
-     */
     const attachMatchesScreenEvents = () => {
         document.getElementById('btnBackFromMatches').addEventListener('click', () => {
             UI.showScreen('homeScreen');
         });
     };
 
-    /**
-     * Events écran statistiques
-     */
     const attachStatsScreenEvents = () => {
         document.getElementById('btnBackFromStats').addEventListener('click', () => {
             UI.showScreen('homeScreen');
@@ -396,29 +362,23 @@ const App = (() => {
         }
     };
 
-    /**
-     * Recalcule toutes les statistiques
-     */
     const recalculateAllStats = async () => {
         const confirmed = await UI.showConfirmModal(
             'Recalculer les stats',
-            'Êtes-vous sûr ? Cette opération recalculera les statistiques de tous les joueurs selon leurs matchs.'
+            'Etes-vous sur ? Cette operation recalculera les statistiques de tous les joueurs selon leurs matchs.'
         );
 
         if (!confirmed) return;
 
         try {
             const count = Stats.recalculateAllStats();
-            UI.showSuccess(`Statistiques recalculées pour ${count} joueur(s)`);
+            UI.showSuccess(`Statistiques recalculees pour ${count} joueur(s)`);
             UI.renderStats();
         } catch (err) {
             UI.showError(`Erreur: ${err.message}`);
         }
     };
 
-    /**
-     * Affiche le détail d'un match
-     */
     const showMatchDetail = (matchId) => {
         UI.renderMatchDetail(matchId);
         UI.showScreen('matchDetailScreen');
@@ -431,5 +391,4 @@ const App = (() => {
     };
 })();
 
-// Initialiser l'app au chargement du DOM
 document.addEventListener('DOMContentLoaded', App.init);

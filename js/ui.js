@@ -8,6 +8,13 @@ const UI = (() => {
      * Obtient le nom d'un joueur (ou "Joueur supprimé" si absent)
      */
     const getPlayerName = (playerId) => {
+        if (playerId === 'ghost') {
+            const match = Games.getCurrentMatch();
+            if (match && match.ghostProfileName) {
+                return `Ghost de ${match.ghostProfileName}`;
+            }
+            return 'Ghost';
+        }
         if (playerId === 'deleted_player') {
             return 'Joueur supprimé';
         }
@@ -18,6 +25,14 @@ const UI = (() => {
     /**
      * Change l'écran actif
      */
+    const getMatchPlayerName = (match, playerIndex) => {
+        const playerId = match.playerIds[playerIndex];
+        if (playerId === 'ghost') {
+            return match.ghostProfileName ? `Ghost de ${match.ghostProfileName}` : 'Ghost';
+        }
+        return getPlayerName(playerId);
+    };
+
     const showScreen = (screenId) => {
         // Masquer tous les écrans
         document.querySelectorAll('.screen').forEach(screen => {
@@ -176,16 +191,13 @@ const UI = (() => {
         const match = Games.getCurrentMatch();
         if (!match) return;
 
-        const player1 = Players.getById(match.playerIds[0]);
-        const player2 = Players.getById(match.playerIds[1]);
-
-        document.getElementById('player1NameDisplay').textContent = getPlayerName(match.playerIds[0]);
+        document.getElementById('player1NameDisplay').textContent = getMatchPlayerName(match, 0);
         document.getElementById('player1Score').textContent = match.scores[0];
         document.getElementById('player1Throws').textContent = 
             `${Games.getPlayerThrows(0).length} volées`;
 
-        if (!match.isTraining) {
-            document.getElementById('player2NameDisplay').textContent = getPlayerName(match.playerIds[1]);
+        {
+            document.getElementById('player2NameDisplay').textContent = getMatchPlayerName(match, 1);
             document.getElementById('player2Score').textContent = match.scores[1];
             document.getElementById('player2Throws').textContent = 
                 `${Games.getPlayerThrows(1).length} volées`;
@@ -206,7 +218,7 @@ const UI = (() => {
         // Highlighter le joueur actuel
         const activeClass = 'active';
         document.getElementById('player1ScoreBoard').classList.toggle(activeClass, match.currentPlayerIndex === 0);
-        if (!match.isTraining) {
+        {
             document.getElementById('player2ScoreBoard').classList.toggle(activeClass, match.currentPlayerIndex === 1);
         }
     };
@@ -240,6 +252,25 @@ const UI = (() => {
         document.getElementById('throwError').style.display = 'none';
         document.getElementById('btnSubmitThrows').style.display = 'block';
         document.getElementById('btnSubmitPartialFinish').style.display = 'none';
+    };
+
+    const setThrowsFormEnabled = (enabled, message = '') => {
+        const form = document.getElementById('throwsForm');
+        const currentPlayerName = document.getElementById('currentPlayerName');
+        const currentPlayerScore = document.getElementById('currentPlayerScore');
+
+        if (form) {
+            form.classList.toggle('simulating', !enabled);
+        }
+
+        document.querySelectorAll('#throwsForm button, #throwsForm input, #throwsForm select').forEach(el => {
+            el.disabled = !enabled;
+        });
+
+        if (!enabled) {
+            if (currentPlayerName) currentPlayerName.textContent = message || 'Ghost en cours...';
+            if (currentPlayerScore) currentPlayerScore.textContent = '';
+        }
     };
 
     /**
@@ -309,26 +340,21 @@ const UI = (() => {
             return;
         }
 
-        // Grouper par joueur
-        const players = [
-            Players.getById(match.playerIds[0]),
-            Players.getById(match.playerIds[1])
-        ];
-
         let html = '';
 
         for (let playerIndex = 0; playerIndex < 2; playerIndex++) {
             const playerThrows = Games.getPlayerThrows(playerIndex);
-            const player = players[playerIndex];
+            const playerName = getMatchPlayerName(match, playerIndex);
 
             if (playerThrows.length > 0) {
                 html += `<div class="player-throws">
-                    <h4>${player.name}</h4>`;
+                    <h4>${playerName}</h4>`;
 
                 playerThrows.forEach(t => {
                     // Formater chaque fléchette
                     const throwsDisplay = t.throw.map(th => Rules.formatThrow(th)).join(' + ');
                     const rowClass = t.isValid ? '' : 'invalid-throw';
+                    const simulatedBadge = t.isSimulated ? '<span class="simulated-badge">Ghost</span>' : '';
                     const invalidBadge = t.isValid ? '' : `<span class="invalid-badge" title="${t.reason}">❌</span>`;
 
                     html += `<div class="throw-row ${rowClass}">
@@ -336,6 +362,7 @@ const UI = (() => {
                         <span class="scores">${throwsDisplay}</span>
                         <span class="total">${t.roundTotal} pts</span>
                         <span class="running">${t.runningTotal}</span>
+                        ${simulatedBadge}
                         ${invalidBadge}
                     </div>`;
                 });
@@ -360,8 +387,8 @@ const UI = (() => {
         }
 
         container.innerHTML = matches.slice().reverse().map(match => {
-            const player1Name = getPlayerName(match.playerIds[0]);
-            const player2Name = getPlayerName(match.playerIds[1]);
+            const player1Name = getMatchPlayerName(match, 0);
+            const player2Name = getMatchPlayerName(match, 1);
             const date = new Date(match.startDate).toLocaleDateString('fr-FR');
 
             // Affichage du résultat
@@ -369,7 +396,7 @@ const UI = (() => {
             if (match.isDNF) {
                 resultDisplay = 'DNF (Did Not Finish)';
             } else {
-                const winnerName = getPlayerName(match.winner);
+                const winnerName = match.winner === 'ghost' ? getMatchPlayerName(match, 1) : getPlayerName(match.winner);
                 resultDisplay = `Gagnant: ${winnerName}`;
             }
 
@@ -414,15 +441,15 @@ const UI = (() => {
             return;
         }
 
-        const player1Name = getPlayerName(match.playerIds[0]);
-        const player2Name = getPlayerName(match.playerIds[1]);
+            const player1Name = getMatchPlayerName(match, 0);
+            const player2Name = getMatchPlayerName(match, 1);
 
         // Afficher le gagnant ou DNF
         let resultDisplay = '';
         if (match.isDNF) {
             resultDisplay = 'DNF (Did Not Finish)';
         } else {
-            resultDisplay = getPlayerName(match.winner);
+            resultDisplay = match.winner === 'ghost' ? getMatchPlayerName(match, 1) : getPlayerName(match.winner);
         }
 
         const container = document.getElementById('matchDetailContent');
@@ -431,11 +458,12 @@ const UI = (() => {
         for (let i = 0; i < 2; i++) {
             const throws = match.throws.filter(t => t.playerIndex === i);
             throwsHtml += `<div class="player-throws">
-                <h4>${getPlayerName(match.playerIds[i])}</h4>`;
+                <h4>${getMatchPlayerName(match, i)}</h4>`;
 
             throws.forEach(t => {
                 const throwsDisplay = t.throw.map(th => Rules.formatThrow(th)).join(' + ');
                 const rowClass = t.isValid ? '' : 'invalid-throw';
+                const simulatedBadge = t.isSimulated ? '<span class="simulated-badge">Ghost</span>' : '';
                 const invalidBadge = t.isValid ? '' : `<span class="invalid-badge" title="${t.reason}">❌</span>`;
 
                 throwsHtml += `<div class="throw-row ${rowClass}">
@@ -443,6 +471,7 @@ const UI = (() => {
                     <span class="scores">${throwsDisplay}</span>
                     <span class="total">${t.roundTotal} pts</span>
                     <span class="running">${t.runningTotal}</span>
+                    ${simulatedBadge}
                     ${invalidBadge}
                 </div>`;
             });
@@ -818,6 +847,7 @@ const UI = (() => {
         renderSelectPlayerOptions,
         updateScoresBoard,
         updateThrowsForm,
+        setThrowsFormEnabled,
         resetThrowSelectors,
         getThrowsFromForm,
         updateThrowsHistory,
