@@ -171,6 +171,13 @@
     accent-color: var(--primary-color);
 }
 
+.ghost-option small {
+    display: block;
+    margin-top: var(--spacing-sm);
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
 /* Error Message */
 
 .error-message {

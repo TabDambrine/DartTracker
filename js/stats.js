@@ -24,7 +24,39 @@ const Stats = (() => {
      * Les self-play ne comptent pas dans les statistiques
      */
     const isSelfPlayMatch = (match) => {
-        return match.isSelfPlay === true;
+        return match.isSelfPlay === true || isGhostMatch(match);
+    };
+
+    const isGhostMatch = (match) => {
+        return match.isGhost === true || match.mode === 'ghost';
+    };
+
+    const isTrainingMatchForPlayer = (match, playerId) => {
+        if (hasDeletedPlayer(match)) return false;
+        if (match.isSelfPlay === true && match.playerIds.includes(playerId)) return true;
+        return isGhostMatch(match) && match.playerIds[0] === playerId;
+    };
+
+    const getTrainingPlayerIndexes = (match, playerId) => {
+        if (isGhostMatch(match)) {
+            return match.playerIds[0] === playerId ? [0] : [];
+        }
+
+        if (match.isSelfPlay === true && match.playerIds.includes(playerId)) {
+            return [0, 1];
+        }
+
+        return [];
+    };
+
+    const isHumanTrainingThrow = (match, playerId, throwRecord) => {
+        return throwRecord.isSimulated !== true &&
+            getTrainingPlayerIndexes(match, playerId).includes(throwRecord.playerIndex);
+    };
+
+    const isTrainingFinishedByPlayer = (match, playerId) => {
+        if (match.isDNF === true) return false;
+        return match.winner === playerId;
     };
 
     /**
@@ -157,7 +189,7 @@ const Stats = (() => {
     const calculateTopThrows = (playerId, gameType = null) => {
         const throwsMap = collectAllThrows(playerId, gameType);
         let matches = Storage.getPlayerMatches(playerId)
-            .filter(match => !hasDeletedPlayer(match) && !isDNF(match));
+            .filter(match => !hasDeletedPlayer(match) && !isDNF(match) && !isSelfPlayMatch(match));
         
         // Filtrer par gameType si spécifié
         if (gameType) {
@@ -215,7 +247,9 @@ const Stats = (() => {
 
         wonMatches.forEach(match => {
             const playerIndex = match.playerIds.indexOf(playerId);
-            const playerThrows = match.throws.filter(t => t.playerIndex === playerIndex);
+            const playerThrows = match.throws.filter(t =>
+                t.playerIndex === playerIndex && t.isSimulated !== true
+            );
 
             // Trouver la volée finale (celle où runningTotal === 0)
             if (playerThrows.length > 0) {
@@ -399,11 +433,12 @@ const Stats = (() => {
         if (!player) return false;
 
         const matches = Storage.getPlayerMatches(playerId)
-            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+            .filter(match => isTrainingMatchForPlayer(match, playerId));
 
         // Calculer les stats basiques (finished = winner !== null, unfinished = isDNF)
-        const finished = matches.filter(m => m.winner !== null && !m.isDNF).length;
-        const unfinished = matches.filter(m => m.isDNF === true).length;
+        const finished = matches.filter(m => isTrainingFinishedByPlayer(m, playerId)).length;
+        const unfinished = matches.filter(m => !isTrainingFinishedByPlayer(m, playerId)).length;
+        const dnf = matches.filter(m => m.isDNF === true).length;
         const totalMatches = matches.length;
 
         // Calculer les stats détaillées pour l'entraînement
@@ -417,14 +452,15 @@ const Stats = (() => {
         const byGameType = {};
         ['301', '501'].forEach(gameType => {
             const gameMatches = matches.filter(m => m.gameType === gameType);
-            const gameFinished = gameMatches.filter(m => m.winner !== null && !m.isDNF).length;
-            const gameUnfinished = gameMatches.filter(m => m.isDNF === true).length;
+            const gameFinished = gameMatches.filter(m => isTrainingFinishedByPlayer(m, playerId)).length;
+            const gameUnfinished = gameMatches.filter(m => !isTrainingFinishedByPlayer(m, playerId)).length;
+            const gameDnf = gameMatches.filter(m => m.isDNF === true).length;
 
             byGameType[gameType] = {
                 totalMatches: gameMatches.length,
                 finished: gameFinished,
                 unfinished: gameUnfinished,
-                dnf: gameUnfinished,
+                dnf: gameDnf,
                 averageRoundScore: parseFloat(calculateAverageRoundScoreTraining(playerId, gameType).toFixed(2)),
                 finishDoubleSuccessRate: parseFloat(calculateFinishDoubleSuccessRateTraining(playerId, gameType).toFixed(1)),
                 bestFinishingScore: calculateBestFinishingScoreTraining(playerId, gameType),
@@ -438,7 +474,7 @@ const Stats = (() => {
             totalMatches,
             finished,
             unfinished,
-            dnf: unfinished,
+            dnf,
             averageRoundScore: parseFloat(averageRoundScore.toFixed(2)),
             finishDoubleSuccessRate: parseFloat(finishDoubleSuccessRate.toFixed(1)),
             bestFinishingScore,
@@ -456,7 +492,7 @@ const Stats = (() => {
      */
     const calculateAverageRoundScoreTraining = (playerId, gameType = null) => {
         let matches = Storage.getPlayerMatches(playerId)
-            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+            .filter(match => isTrainingMatchForPlayer(match, playerId) && !isDNF(match));
         
         // Filtrer par gameType si spécifié
         if (gameType) {
@@ -468,7 +504,7 @@ const Stats = (() => {
 
         matches.forEach(match => {
             match.throws.forEach(throwRecord => {
-                if (throwRecord.isValid) {
+                if (throwRecord.isValid && isHumanTrainingThrow(match, playerId, throwRecord)) {
                     totalScore += throwRecord.roundTotal;
                     validRoundsCount += 1;
                 }
@@ -484,21 +520,23 @@ const Stats = (() => {
      */
     const calculateFinishDoubleSuccessRateTraining = (playerId, gameType = null) => {
         let matches = Storage.getPlayerMatches(playerId)
-            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+            .filter(match => isTrainingMatchForPlayer(match, playerId));
         
         // Filtrer par gameType si spécifié
         if (gameType) {
             matches = matches.filter(match => match.gameType === gameType);
         }
         
-        const finishedMatches = matches.filter(m => m.winner !== null && !m.isDNF);
+        const finishedMatches = matches.filter(m => isTrainingFinishedByPlayer(m, playerId));
 
         if (finishedMatches.length === 0) return 0;
 
         let finishDoubleCount = 0;
 
         finishedMatches.forEach(match => {
-            const lastThrows = match.throws.sort((a, b) => b.timestamp - a.timestamp);
+            const lastThrows = match.throws
+                .filter(t => isHumanTrainingThrow(match, playerId, t))
+                .sort((a, b) => b.timestamp - a.timestamp);
             if (lastThrows.length > 0) {
                 const lastThrow = lastThrows[0];
                 if (lastThrow.throw && lastThrow.throw[0]) {
@@ -519,7 +557,7 @@ const Stats = (() => {
      */
     const collectAllThrowsTraining = (playerId, gameType = null) => {
         let matches = Storage.getPlayerMatches(playerId)
-            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+            .filter(match => isTrainingMatchForPlayer(match, playerId));
         
         // Filtrer par gameType si spécifié
         if (gameType) {
@@ -530,7 +568,7 @@ const Stats = (() => {
 
         matches.forEach(match => {
             match.throws.forEach(throwRecord => {
-                if (throwRecord.throw) {
+                if (throwRecord.throw && isHumanTrainingThrow(match, playerId, throwRecord)) {
                     throwRecord.throw.forEach(dart => {
                         if (dart.segment && dart.segment !== 0 && dart.segment !== -1) {
                             const key = `${dart.segment}-${dart.multiplier}`;
@@ -561,7 +599,7 @@ const Stats = (() => {
     const calculateTopThrowsTraining = (playerId, gameType = null) => {
         const throwsMap = collectAllThrowsTraining(playerId, gameType);
         let matches = Storage.getPlayerMatches(playerId)
-            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+            .filter(match => isTrainingMatchForPlayer(match, playerId) && !isDNF(match));
         
         // Filtrer par gameType si spécifié
         if (gameType) {
@@ -571,7 +609,7 @@ const Stats = (() => {
         let totalDarts = 0;
         matches.forEach(match => {
             match.throws.forEach(throwRecord => {
-                if (throwRecord.throw) {
+                if (throwRecord.throw && isHumanTrainingThrow(match, playerId, throwRecord)) {
                     totalDarts += throwRecord.throw.filter(d => d.segment && d.segment !== 0 && d.segment !== -1).length;
                 }
             });
@@ -598,21 +636,21 @@ const Stats = (() => {
      */
     const calculateBestFinishingScoreTraining = (playerId, gameType = null) => {
         let matches = Storage.getPlayerMatches(playerId)
-            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match) && !isDNF(match));
+            .filter(match => isTrainingMatchForPlayer(match, playerId) && !isDNF(match));
         
         // Filtrer par gameType si spécifié
         if (gameType) {
             matches = matches.filter(match => match.gameType === gameType);
         }
         
-        const finishedMatches = matches.filter(m => m.winner !== null);
+        const finishedMatches = matches.filter(m => isTrainingFinishedByPlayer(m, playerId));
 
         if (finishedMatches.length === 0) return 0;
 
         let bestScore = 0;
 
         finishedMatches.forEach(match => {
-            const playerThrows = match.throws;
+            const playerThrows = match.throws.filter(t => isHumanTrainingThrow(match, playerId, t));
 
             if (playerThrows.length > 0) {
                 for (let i = playerThrows.length - 1; i >= 0; i--) {
@@ -636,18 +674,18 @@ const Stats = (() => {
      */
     const collectFinishingDoublesTraining = (playerId, gameType = null) => {
         let matches = Storage.getPlayerMatches(playerId)
-            .filter(match => match.isSelfPlay === true && !hasDeletedPlayer(match));
+            .filter(match => isTrainingMatchForPlayer(match, playerId));
         
         // Filtrer par gameType si spécifié
         if (gameType) {
             matches = matches.filter(match => match.gameType === gameType);
         }
         
-        const finishedMatches = matches.filter(m => m.winner !== null && !m.isDNF);
+        const finishedMatches = matches.filter(m => isTrainingFinishedByPlayer(m, playerId));
         const doublesMap = new Map();
 
         finishedMatches.forEach(match => {
-            const playerThrows = match.throws;
+            const playerThrows = match.throws.filter(t => isHumanTrainingThrow(match, playerId, t));
 
             if (playerThrows.length > 0) {
                 const lastThrow = playerThrows[playerThrows.length - 1];
