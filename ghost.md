@@ -289,4 +289,3 @@ Le comportement du Ghost peut être influencé par les statistiques du joueur :
 
 ## Voir aussi
 - [README.md](README.md) - Documentation principale
-- [INSTRUCTIONS.md](INSTRUCTIONS.md) - Instructions d'utilisation
