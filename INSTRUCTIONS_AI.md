@@ -1,6 +1,6 @@
 # DartTracker - Instructions pour Agents IA
 
-**Dernière mise à jour** : 2025-05-08  
+**Dernière mise à jour** : 2026-05-08  
 **Version** : 2.0  
 **Projet** : [TabDambrine/DartTracker](https://github.com/TabDambrine/DartTracker)
 
@@ -663,16 +663,6 @@ const validateRoundDetailed = (gameType, currentScore, throws) => {
 - **L'application est d'abord mobile** (responsive design)
 - **Éviter les éléments trop petits** pour les doigts
 - **Tester sur mobile** (ou utiliser les DevTools en mode mobile)
-
----
-
-## 📞 Support
-
-Si vous avez des questions sur le projet :
-- **Consulter le code** : La plupart des réponses s'y trouvent
-- **Consulter le README.md** : Documentation utilisateur
-- **Consulter ce fichier** : Instructions pour les agents IA
-- **Ouvrir une issue** sur GitHub pour les bugs ou demandes de fonctionnalités
 
 ---
 
