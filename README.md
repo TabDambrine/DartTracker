@@ -15,6 +15,7 @@ Une Progressive Web App (PWA) pour tracker et analyser les statistiques de jeux 
   - Top 10 coups préférés avec pourcentages
   - Meilleur score de finish
   - Double préféré pour finir les matchs
+- **Mode Ghost**: Jouez contre un adversaire virtuel basé sur les statistiques d'un joueur réel
 - **Export/Import JSON**: Sauvegarde et restauration complète des données (joueurs et matchs)
 - **PWA Auto-Reload**: Notification et rechargement automatique lors des mises à jour
 - **Offline-first**: Fonctionne sans connexion internet via Service Worker
@@ -83,6 +84,7 @@ dart-stats-tracker/
     ├── storage.js       # localStorage wrapper
     ├── players.js       # Gestion des joueurs
     ├── games.js         # Logique des matchs
+    ├── ghost.js         # Système Ghost (adversaire virtuel)
     ├── rules.js         # Validation des règles
     ├── stats.js         # Calcul des statistiques
     ├── finishes.js       # Gestion des finishes
@@ -98,6 +100,26 @@ dart-stats-tracker/
 - **Offline**: Service Worker
 - **PWA**: Web App Manifest
 - **Dépendances**: Aucune! 🎉
+
+## 👻 Mode Ghost
+
+Le mode **Ghost** vous permet de jouer contre un adversaire virtuel dont les performances sont basées sur les statistiques d'un joueur réel. C'est idéal pour s'entraîner ou jouer seul.
+
+### Fonctionnement
+- Sélectionnez un joueur existant comme "Ghost"
+- Le Ghost utilisera ses statistiques (moyenne par volée, taux de réussite des doubles, etc.)
+- Le système génère des volées réalistes en fonction du profil du joueur
+- Le Ghost tente de finir les matchs comme un vrai joueur
+
+### Caractéristiques
+- **Adaptation au joueur**: Le Ghost utilise les statistiques du joueur sélectionné
+- **Comportement réaliste**: Variabilité des performances avec distribution normale
+- **Gestion des finitions**: Tente de finir quand le score le permet, avec un taux de réussite basé sur les stats
+- **Double préféré**: Prend en compte le double préféré du joueur pour les finitions
+
+Pour plus de détails sur l'algorithme de sélection des volées, consultez [ghost.md](ghost.md).
+
+---
 
 ## 📝 Notes de Développement
 
