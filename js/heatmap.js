@@ -154,14 +154,19 @@ const Heatmap = (() => {
         const centerY = size / 2;
         
         // Ordre des zones : Simple (centre), Triple (milieu), Double (extérieur)
-        const singleRadius = size * 0.25;   // Simple au centre
-        const tripleRadius = size * 0.35;   // Triple au milieu
-        const doubleRadius = size * 0.45;   // Double à l'extérieur
-        const bull25Radius = size * 0.15;   // Rayon BULL 25
-        const bull50Radius = size * 0.07;   // Rayon BULL 50
+        // Avec des marges pour bien distinguer les zones
+        const singleRadius = size * 0.20;   // Simple au centre (20%)
+        const tripleInnerRadius = size * 0.25; // Début de la zone Triple
+        const tripleOuterRadius = size * 0.35; // Fin de la zone Triple
+        const doubleInnerRadius = size * 0.40; // Début de la zone Double
+        const doubleOuterRadius = size * 0.48; // Fin de la zone Double
+        const bull25Radius = size * 0.10;   // Rayon BULL 25
+        const bull50Radius = size * 0.05;   // Rayon BULL 50
 
         // Calculer l'angle entre chaque segment (20 segments = 18° chacun)
         const segmentAngle = (2 * Math.PI) / 20;
+        // Décalage de -90° (-π/2) pour que le premier segment (20) soit en haut
+        const startOffset = -Math.PI / 2;
 
         let svg = `
             <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
@@ -169,13 +174,13 @@ const Heatmap = (() => {
                 <rect width="${size}" height="${size}" fill="#1a1a2e" />
 
                 <!-- Cercle extérieur (background) -->
-                <circle cx="${centerX}" cy="${centerY}" r="${doubleRadius}" fill="#0f0f1a" />
+                <circle cx="${centerX}" cy="${centerY}" r="${doubleOuterRadius}" fill="#0f0f1a" />
         `;
 
         // Dessiner les segments pour Simple, Triple, Double (dans cet ordre : centre vers extérieur)
         DARTBOARD.segments.forEach((segment, index) => {
-            const startAngle = index * segmentAngle;
-            const endAngle = (index + 1) * segmentAngle;
+            const startAngle = startOffset + index * segmentAngle;
+            const endAngle = startOffset + (index + 1) * segmentAngle;
 
             // Couleur par défaut (blanc cassé)
             let singleColor = '#f0f0f0';
@@ -196,63 +201,67 @@ const Heatmap = (() => {
             tripleColor = getColorForCount(tripleCount);
             doubleColor = getColorForCount(doubleCount);
 
-            // Dessiner la zone Simple (centre)
+            // Dessiner la zone Simple (centre) - cercle complet
             svg += `
                 <path d="M ${centerX},${centerY}
                          L ${centerX + singleRadius * Math.cos(startAngle)},${centerY + singleRadius * Math.sin(startAngle)}
                          A ${singleRadius},${singleRadius} 0 0 1 ${centerX + singleRadius * Math.cos(endAngle)},${centerY + singleRadius * Math.sin(endAngle)}
                          Z"
                       fill="${singleColor}"
-                      stroke="#111" stroke-width="0.5"
+                      stroke="#000" stroke-width="1"
                       data-segment="${segment}" data-multiplier="1" />
             `;
 
-            // Dessiner la zone Triple (milieu)
+            // Dessiner la zone Triple (milieu) - entre singleRadius et tripleOuterRadius
             svg += `
-                <path d="M ${centerX},${centerY}
-                         L ${centerX + tripleRadius * Math.cos(startAngle)},${centerY + tripleRadius * Math.sin(startAngle)}
-                         A ${tripleRadius},${tripleRadius} 0 0 1 ${centerX + tripleRadius * Math.cos(endAngle)},${centerY + tripleRadius * Math.sin(endAngle)}
+                <path d="M ${centerX + tripleInnerRadius * Math.cos(startAngle)},${centerY + tripleInnerRadius * Math.sin(startAngle)}
+                         L ${centerX + tripleOuterRadius * Math.cos(startAngle)},${centerY + tripleOuterRadius * Math.sin(startAngle)}
+                         A ${tripleOuterRadius},${tripleOuterRadius} 0 0 1 ${centerX + tripleOuterRadius * Math.cos(endAngle)},${centerY + tripleOuterRadius * Math.sin(endAngle)}
+                         L ${centerX + tripleInnerRadius * Math.cos(endAngle)},${centerY + tripleInnerRadius * Math.sin(endAngle)}
+                         A ${tripleInnerRadius},${tripleInnerRadius} 0 0 0 ${centerX + tripleInnerRadius * Math.cos(startAngle)},${centerY + tripleInnerRadius * Math.sin(startAngle)}
                          Z"
                       fill="${tripleColor}"
-                      stroke="#111" stroke-width="0.5"
+                      stroke="#000" stroke-width="1"
                       data-segment="${segment}" data-multiplier="3" />
             `;
 
-            // Dessiner la zone Double (extérieur)
+            // Dessiner la zone Double (extérieur) - entre tripleOuterRadius et doubleOuterRadius
             svg += `
-                <path d="M ${centerX},${centerY}
-                         L ${centerX + doubleRadius * Math.cos(startAngle)},${centerY + doubleRadius * Math.sin(startAngle)}
-                         A ${doubleRadius},${doubleRadius} 0 0 1 ${centerX + doubleRadius * Math.cos(endAngle)},${centerY + doubleRadius * Math.sin(endAngle)}
+                <path d="M ${centerX + doubleInnerRadius * Math.cos(startAngle)},${centerY + doubleInnerRadius * Math.sin(startAngle)}
+                         L ${centerX + doubleOuterRadius * Math.cos(startAngle)},${centerY + doubleOuterRadius * Math.sin(startAngle)}
+                         A ${doubleOuterRadius},${doubleOuterRadius} 0 0 1 ${centerX + doubleOuterRadius * Math.cos(endAngle)},${centerY + doubleOuterRadius * Math.sin(endAngle)}
+                         L ${centerX + doubleInnerRadius * Math.cos(endAngle)},${centerY + doubleInnerRadius * Math.sin(endAngle)}
+                         A ${doubleInnerRadius},${doubleInnerRadius} 0 0 0 ${centerX + doubleInnerRadius * Math.cos(startAngle)},${centerY + doubleInnerRadius * Math.sin(startAngle)}
                          Z"
                       fill="${doubleColor}"
-                      stroke="#111" stroke-width="0.5"
+                      stroke="#000" stroke-width="1"
                       data-segment="${segment}" data-multiplier="2" />
             `;
         });
 
-        // Dessiner BULL 25 (anneau)
+        // Dessiner BULL 25 (anneau) - entre le centre et la zone Simple
         const bull25Count = dartCounts.has('25-1') ? dartCounts.get('25-1').count : 0;
         const bull25Color = getColorForCount(bull25Count);
         svg += `
             <circle cx="${centerX}" cy="${centerY}" r="${bull25Radius}"
-                    fill="${bull25Color}" stroke="#111" stroke-width="0.5"
+                    fill="${bull25Color}" stroke="#000" stroke-width="1"
                     data-segment="25" data-multiplier="1" />
         `;
 
-        // Dessiner BULL 50 (centre)
+        // Dessiner BULL 50 (centre) - tout au centre
         const bull50Count = (dartCounts.has('0-1') ? dartCounts.get('0-1').count : 0) +
                            (dartCounts.has('50-1') ? dartCounts.get('50-1').count : 0);
         const bull50Color = getColorForCount(bull50Count);
         svg += `
             <circle cx="${centerX}" cy="${centerY}" r="${bull50Radius}"
-                    fill="${bull50Color}" stroke="#111" stroke-width="0.5"
+                    fill="${bull50Color}" stroke="#000" stroke-width="1"
                     data-segment="0" data-multiplier="1" />
         `;
 
-        // Ajouter les numéros des segments (positionnés entre Double et Triple)
+        // Ajouter les numéros des segments (positionnés dans la zone Double)
         DARTBOARD.segments.forEach((segment, index) => {
-            const angle = index * segmentAngle + segmentAngle / 2;
-            const textRadius = tripleRadius + (doubleRadius - tripleRadius) * 0.5;
+            const angle = startOffset + index * segmentAngle + segmentAngle / 2;
+            const textRadius = doubleInnerRadius + (doubleOuterRadius - doubleInnerRadius) * 0.5;
             const x = centerX + textRadius * Math.cos(angle);
             const y = centerY + textRadius * Math.sin(angle);
             svg += `
@@ -264,10 +273,10 @@ const Heatmap = (() => {
 
         // Ajouter les labels pour les zones (Simple, Triple, Double - dans l'ordre centre vers extérieur)
         svg += `
-            <text x="${centerX}" y="${centerY - singleRadius * 0.6}" text-anchor="middle" fill="#000" font-size="9">Simple</text>
-            <text x="${centerX}" y="${centerY - tripleRadius * 0.6}" text-anchor="middle" fill="#000" font-size="9">Triple</text>
-            <text x="${centerX}" y="${centerY - doubleRadius * 0.6}" text-anchor="middle" fill="#000" font-size="9">Double</text>
-            <text x="${centerX}" y="${centerY + bull25Radius * 0.5}" text-anchor="middle" fill="#000" font-size="9">25</text>
+            <text x="${centerX}" y="${centerY - singleRadius * 0.7}" text-anchor="middle" fill="#000" font-size="9">Simple</text>
+            <text x="${centerX}" y="${centerY - tripleOuterRadius * 0.7}" text-anchor="middle" fill="#000" font-size="9">Triple</text>
+            <text x="${centerX}" y="${centerY - doubleOuterRadius * 0.7}" text-anchor="middle" fill="#000" font-size="9">Double</text>
+            <text x="${centerX}" y="${centerY + bull25Radius * 0.6}" text-anchor="middle" fill="#000" font-size="9">25</text>
             <text x="${centerX}" y="${centerY}" text-anchor="middle" fill="#000" font-size="9" dy="3">50</text>
         `;
 
