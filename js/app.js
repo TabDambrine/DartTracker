@@ -16,6 +16,7 @@ const App = (() => {
         attachGameScreenEvents();
         attachMatchesScreenEvents();
         attachStatsScreenEvents();
+        attachHeatmapScreenEvents();
 
         const btnBackFromMatchDetail = document.getElementById('btnBackFromMatchDetail');
         if (btnBackFromMatchDetail) {
@@ -358,6 +359,33 @@ const App = (() => {
         if (btnRecalculate) {
             btnRecalculate.addEventListener('click', () => {
                 recalculateAllStats();
+            });
+        }
+
+        // Bouton Heatmap dans les stats
+        const btnShowHeatmap = document.getElementById('btnShowHeatmap');
+        if (btnShowHeatmap) {
+            btnShowHeatmap.addEventListener('click', () => {
+                // Récupérer le joueur actuellement sélectionné dans les stats
+                const statsSelect = document.getElementById('playerStatsSelect');
+                if (statsSelect && statsSelect.value) {
+                    // Préselectionner le même joueur dans la heatmap
+                    const heatmapSelect = document.getElementById('heatmapPlayerSelect');
+                    if (heatmapSelect) {
+                        heatmapSelect.value = statsSelect.value;
+                    }
+                }
+                UI.renderHeatmap();
+                UI.showScreen('heatmapScreen');
+            });
+        }
+    };
+
+    const attachHeatmapScreenEvents = () => {
+        const btnBackFromHeatmap = document.getElementById('btnBackFromHeatmap');
+        if (btnBackFromHeatmap) {
+            btnBackFromHeatmap.addEventListener('click', () => {
+                UI.showScreen('statsScreen');
             });
         }
     };

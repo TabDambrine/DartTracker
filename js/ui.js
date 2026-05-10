@@ -834,6 +834,88 @@ const UI = (() => {
         suggestionEl.style.display = 'block';
     };
 
+    /**
+     * Rend la heatmap pour le joueur sélectionné
+     */
+    const renderHeatmap = () => {
+        const players = Players.getAll();
+        const selectElement = document.getElementById('heatmapPlayerSelect');
+        const container = document.getElementById('heatmapContainer');
+
+        // Remplir le sélecteur de joueurs
+        if (selectElement) {
+            selectElement.innerHTML = players.map(p =>
+                `<option value="${p.id}">${p.name}</option>`
+            ).join('');
+
+            // Ajouter un événement changement
+            selectElement.removeEventListener('change', renderHeatmapForPlayer);
+            selectElement.addEventListener('change', renderHeatmapForPlayer);
+        }
+
+        // Ajouter les événements des filtres
+        const matchTypeSelect = document.getElementById('heatmapMatchType');
+        const gameTypeSelect = document.getElementById('heatmapGameType');
+        const validitySelect = document.getElementById('heatmapValidity');
+        const finishOnlySelect = document.getElementById('heatmapFinishOnly');
+
+        if (matchTypeSelect) {
+            matchTypeSelect.removeEventListener('change', renderHeatmapForPlayer);
+            matchTypeSelect.addEventListener('change', renderHeatmapForPlayer);
+        }
+        if (gameTypeSelect) {
+            gameTypeSelect.removeEventListener('change', renderHeatmapForPlayer);
+            gameTypeSelect.addEventListener('change', renderHeatmapForPlayer);
+        }
+        if (validitySelect) {
+            validitySelect.removeEventListener('change', renderHeatmapForPlayer);
+            validitySelect.addEventListener('change', renderHeatmapForPlayer);
+        }
+        if (finishOnlySelect) {
+            finishOnlySelect.removeEventListener('change', renderHeatmapForPlayer);
+            finishOnlySelect.addEventListener('change', renderHeatmapForPlayer);
+        }
+
+        // Afficher la heatmap du premier joueur par défaut
+        if (players.length > 0) {
+            renderHeatmapForPlayer();
+        } else {
+            container.innerHTML = '<p class="no-data">Aucun joueur</p>';
+        }
+    };
+
+    /**
+     * Affiche la heatmap pour le joueur sélectionné avec les filtres
+     */
+    const renderHeatmapForPlayer = () => {
+        const selectElement = document.getElementById('heatmapPlayerSelect');
+        const container = document.getElementById('heatmapContainer');
+
+        const playerId = selectElement ? selectElement.value : null;
+        if (!playerId) {
+            container.innerHTML = '<p class="no-data">Veuillez sélectionner un joueur</p>';
+            return;
+        }
+
+        const player = Players.getById(playerId);
+        if (!player) {
+            container.innerHTML = '<p class="no-data">Joueur non trouvé</p>';
+            return;
+        }
+
+        // Récupérer les filtres
+        const filters = {
+            matchType: document.getElementById('heatmapMatchType')?.value || 'all',
+            gameType: document.getElementById('heatmapGameType')?.value || 'all',
+            validity: document.getElementById('heatmapValidity')?.value || 'all',
+            finishOnly: document.getElementById('heatmapFinishOnly')?.value === 'true'
+        };
+
+        // Générer et afficher la heatmap
+        const heatmapHTML = Heatmap.updateHeatmap(playerId, filters);
+        container.innerHTML = heatmapHTML;
+    };
+
     return {
         showScreen,
         showConfirmModal,
@@ -855,6 +937,8 @@ const UI = (() => {
         renderMatchDetail,
         renderStats,
         getPlayerName,
-        updateFinishSuggestion
+        updateFinishSuggestion,
+        renderHeatmap,
+        renderHeatmapForPlayer
     };
 })();

@@ -23,6 +23,7 @@
      <link rel="stylesheet" href="css/throws.css">
      <link rel="stylesheet" href="css/matches.css">
      <link rel="stylesheet" href="css/stats.css">
+     <link rel="stylesheet" href="css/heatmap.css">
      <!-- 5. Utilitaires (modales, loader, états vides) -->
      <link rel="stylesheet" href="css/utils.css">
      <!-- 6. Responsive et accessibilité (doit être en dernier) -->
@@ -243,6 +244,66 @@
                 </div>
                 <!-- Affichage des stats -->
                 <div id="statsList" class="stats-list"></div>
+                <!-- Bouton Heatmap -->
+                <div class="heatmap-section">
+                    <button id="btnShowHeatmap" class="btn btn-heatmap">
+                        <span class="icon">🔥</span>
+                        Heatmap des lancers
+                    </button>
+                </div>
+            </main>
+        </div>
+
+        <!-- Screen: Heatmap des Lancers -->
+        <div id="heatmapScreen" class="screen">
+            <header class="app-header with-back">
+                <button id="btnBackFromHeatmap" class="btn-back">←</button>
+                <h2>Heatmap des Lancers</h2>
+            </header>
+            <main class="container">
+                <!-- Sélecteur de joueur -->
+                <div class="player-selector">
+                    <label for="heatmapPlayerSelect" class="selector-label">Joueur:</label>
+                    <select id="heatmapPlayerSelect" class="form-input"></select>
+                </div>
+
+                <!-- Filtres -->
+                <div class="heatmap-filters">
+                    <div class="filter-group">
+                        <label for="heatmapMatchType">Type de match:</label>
+                        <select id="heatmapMatchType" class="form-input">
+                            <option value="all">Tous</option>
+                            <option value="competition">Compétition</option>
+                            <option value="training">Entraînement</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="heatmapGameType">Type de jeu:</label>
+                        <select id="heatmapGameType" class="form-input">
+                            <option value="all">Tous</option>
+                            <option value="501">501</option>
+                            <option value="301">301</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="heatmapValidity">Validité:</label>
+                        <select id="heatmapValidity" class="form-input">
+                            <option value="all">Toutes</option>
+                            <option value="valid">Valides uniquement</option>
+                            <option value="invalid">Invalides uniquement</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="heatmapFinishOnly">Finitions uniquement:</label>
+                        <select id="heatmapFinishOnly" class="form-input">
+                            <option value="false">Non</option>
+                            <option value="true">Oui</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Affichage de la heatmap -->
+                <div id="heatmapContainer" class="heatmap-container"></div>
             </main>
         </div>
 
@@ -301,6 +362,7 @@
     <script src="js/ghost.js"></script>
     <script src="js/throws-input.js"></script>
     <script src="js/export.js"></script>
+    <script src="js/heatmap.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
 
