@@ -165,8 +165,9 @@ const Heatmap = (() => {
 
         // Calculer l'angle entre chaque segment (20 segments = 18° chacun)
         const segmentAngle = (2 * Math.PI) / 20;
-        // Décalage de -90° (-π/2) pour que le premier segment (20) soit en haut
-        const startOffset = -Math.PI / 2;
+        // Décalage pour que le CENTRE du segment 20 soit à -90° (en haut)
+        // segmentAngle/2 = 9° (demi-segment), donc startOffset = -π/2 - 9°
+        const startOffset = -Math.PI / 2 - segmentAngle / 2;
 
         let svg = `
             <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
@@ -273,10 +274,10 @@ const Heatmap = (() => {
 
         // Ajouter les labels pour les zones (Simple, Triple, Double - dans l'ordre centre vers extérieur)
         svg += `
-            <text x="${centerX}" y="${centerY - singleRadius * 0.7}" text-anchor="middle" fill="#000" font-size="9">Simple</text>
-            <text x="${centerX}" y="${centerY - tripleOuterRadius * 0.7}" text-anchor="middle" fill="#000" font-size="9">Triple</text>
-            <text x="${centerX}" y="${centerY - doubleOuterRadius * 0.7}" text-anchor="middle" fill="#000" font-size="9">Double</text>
-            <text x="${centerX}" y="${centerY + bull25Radius * 0.6}" text-anchor="middle" fill="#000" font-size="9">25</text>
+            <text x="${centerX}" y="${centerY - singleRadius * 0.6}" text-anchor="middle" fill="#000" font-size="9">Simple</text>
+            <text x="${centerX}" y="${centerY - tripleOuterRadius * 0.55}" text-anchor="middle" fill="#000" font-size="9">Triple</text>
+            <text x="${centerX}" y="${centerY - doubleOuterRadius * 0.4}" text-anchor="middle" fill="#000" font-size="9">Double</text>
+            <text x="${centerX}" y="${centerY + bull25Radius * 0.8}" text-anchor="middle" fill="#000" font-size="9">25</text>
             <text x="${centerX}" y="${centerY}" text-anchor="middle" fill="#000" font-size="9" dy="3">50</text>
         `;
 
