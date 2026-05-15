@@ -1,28 +1,65 @@
 /**
  * Ghost Module
- * Simule les volées d'un adversaire à partir des statistiques d'un joueur.
+ * Simule les volees d'un adversaire a partir des statistiques d'un joueur.
+ *
+ * Le ghost ne tire pas seulement un total: il vise des cibles. En scoring il
+ * vise principalement T20, ce qui produit naturellement S20, S1, S5, T20 et
+ * des misses. En zone de finish, il suit une route de finish puis simule les
+ * doubles rates de facon plausible.
  */
 
 const Ghost = (() => {
     const MISS = { segment: -1, multiplier: 1 };
-    const ALL_DARTS = (() => {
-        const darts = [MISS, { segment: 25, multiplier: 1 }, { segment: 50, multiplier: 1 }];
-        for (let segment = 1; segment <= 20; segment++) {
-            darts.push({ segment, multiplier: 1 });
-            darts.push({ segment, multiplier: 2 });
-            darts.push({ segment, multiplier: 3 });
-        }
-        return darts;
-    })();
+    const BOARD_ORDER = [20, 1, 18, 4, 13, 6, 10, 15, 2, 17, 3, 19, 7, 16, 8, 11, 14, 9, 12, 5];
 
     const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-    const randomNormal = (mean, deviation) => {
-        const u = Math.max(Math.random(), Number.EPSILON);
-        const v = Math.max(Math.random(), Number.EPSILON);
-        const z = Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-        return mean + z * deviation;
+    const addWeight = (weights, dart, weight) => {
+        if (!dart || weight <= 0) return;
+        const key = `${dart.segment}-${dart.multiplier}`;
+        weights.set(key, (weights.get(key) || 0) + weight);
     };
+
+    const parseWeightedDart = (key) => {
+        const [segment, multiplier] = key.split('-').map(Number);
+        return { segment, multiplier };
+    };
+
+    const weightedPick = (weights) => {
+        let total = 0;
+        weights.forEach(weight => {
+            total += weight;
+        });
+
+        if (total <= 0) return { ...MISS };
+
+        let cursor = Math.random() * total;
+        for (const [key, weight] of weights.entries()) {
+            cursor -= weight;
+            if (cursor <= 0) return parseWeightedDart(key);
+        }
+
+        return parseWeightedDart(Array.from(weights.keys()).pop());
+    };
+
+    const getNeighbors = (segment) => {
+        const index = BOARD_ORDER.indexOf(segment);
+        if (index === -1) return [];
+
+        return [
+            BOARD_ORDER[(index - 1 + BOARD_ORDER.length) % BOARD_ORDER.length],
+            BOARD_ORDER[(index + 1) % BOARD_ORDER.length]
+        ];
+    };
+
+    const normalizeThrow = (throw_) => ({
+        segment: throw_.segment === 0 ? 50 : throw_.segment,
+        multiplier: throw_.segment === 0 || throw_.segment === 25 || throw_.segment === 50 || throw_.segment === -1
+            ? 1
+            : throw_.multiplier
+    });
+
+    const scoreOf = (throw_) => Rules.calculateScore(normalizeThrow(throw_));
 
     const getStatsForGameType = (player, gameType) => {
         const competitionStats = player.stats?.byGameType?.[gameType];
@@ -46,9 +83,47 @@ const Ghost = (() => {
         return null;
     };
 
+    const collectHistoricalProfile = (playerId, gameType) => {
+        const scoringWeights = new Map();
+        let scoringDarts = 0;
+
+        Storage.getPlayerMatches(playerId)
+            .filter(match => !gameType || match.gameType === gameType)
+            .forEach(match => {
+                const indexes = [];
+
+                match.playerIds.forEach((id, index) => {
+                    if (id === playerId) indexes.push(index);
+                });
+
+                match.throws.forEach(throwRecord => {
+                    if (throwRecord.isSimulated === true || throwRecord.isValid !== true) return;
+                    if (!indexes.includes(throwRecord.playerIndex)) return;
+
+                    const scoreBeforeThrow = throwRecord.runningTotal + throwRecord.roundTotal;
+                    if (scoreBeforeThrow <= 170 || !throwRecord.throw) return;
+
+                    throwRecord.throw.forEach(dart => {
+                        const normalized = normalizeThrow(dart);
+                        addWeight(scoringWeights, normalized, 1);
+                        scoringDarts += 1;
+                    });
+                });
+            });
+
+        return {
+            scoringWeights,
+            scoringDarts
+        };
+    };
+
     const buildProfile = (playerId, gameType) => {
         const player = Players.getById(playerId);
         const stats = player ? getStatsForGameType(player, gameType) : null;
+        const history = player ? collectHistoricalProfile(playerId, gameType) : {
+            scoringWeights: new Map(),
+            scoringDarts: 0
+        };
 
         return {
             playerId,
@@ -57,105 +132,220 @@ const Ghost = (() => {
             finishDoubleSuccessRate: stats?.finishDoubleSuccessRate || 12,
             bestFinishingScore: stats?.bestFinishingScore || 60,
             preferredFinishingDouble: stats?.preferredFinishingDouble || player?.stats?.preferredFinishingDouble || null,
-            topThrows: stats?.topThrows || []
+            topThrows: stats?.topThrows || [],
+            historicalScoringWeights: history.scoringWeights,
+            historicalScoringDarts: history.scoringDarts
         };
     };
 
-    const toRulesThrow = (throw_) => ({
-        segment: throw_.segment === 0 ? 50 : throw_.segment,
-        multiplier: throw_.segment === 0 || throw_.segment === 25 || throw_.segment === 50 || throw_.segment === -1
-            ? 1
-            : throw_.multiplier
-    });
+    const getSkill = (profile) => {
+        return clamp((profile.averageRoundScore - 25) / 70, 0, 1);
+    };
 
-    const findDartsForTotal = (total, maxDarts = 3) => {
-        if (total <= 0) {
-            return [MISS, MISS, MISS].slice(0, maxDarts);
+    const getDefaultT20Weights = (profile) => {
+        const skill = getSkill(profile);
+        const weights = new Map();
+
+        addWeight(weights, { segment: 20, multiplier: 3 }, 5 + skill * 32);
+        addWeight(weights, { segment: 20, multiplier: 1 }, 34 - skill * 6);
+        addWeight(weights, { segment: 1, multiplier: 1 }, 18 - skill * 7);
+        addWeight(weights, { segment: 5, multiplier: 1 }, 18 - skill * 7);
+        addWeight(weights, { segment: -1, multiplier: 1 }, 13 - skill * 8);
+        addWeight(weights, { segment: 20, multiplier: 2 }, 2 + skill * 3);
+        addWeight(weights, { segment: 1, multiplier: 3 }, 3);
+        addWeight(weights, { segment: 5, multiplier: 3 }, 3);
+        addWeight(weights, { segment: 18, multiplier: 1 }, 2);
+        addWeight(weights, { segment: 12, multiplier: 1 }, 2);
+
+        return weights;
+    };
+
+    const getScoringWeights = (profile) => {
+        const weights = getDefaultT20Weights(profile);
+
+        if (profile.historicalScoringDarts >= 45) {
+            profile.historicalScoringWeights.forEach((weight, key) => {
+                weights.set(key, (weights.get(key) || 0) + weight * 1.8);
+            });
         }
 
-        const scoredDarts = ALL_DARTS
-            .filter(dart => Rules.calculateScore(toRulesThrow(dart)) > 0)
-            .sort((a, b) => Rules.calculateScore(toRulesThrow(b)) - Rules.calculateScore(toRulesThrow(a)));
+        return weights;
+    };
 
-        for (const first of scoredDarts) {
-            const firstScore = Rules.calculateScore(toRulesThrow(first));
-            if (firstScore === total && maxDarts >= 1) return [toRulesThrow(first)];
+    const isSafeDart = (currentScore, currentTurnTotal, dart) => {
+        const remaining = currentScore - currentTurnTotal - scoreOf(dart);
+        if (remaining < 0 || remaining === 1) return false;
+        if (remaining === 0 && !Rules.isDouble(normalizeThrow(dart))) return false;
+        return true;
+    };
 
-            if (maxDarts >= 2) {
-                for (const second of scoredDarts) {
-                    const secondScore = Rules.calculateScore(toRulesThrow(second));
-                    if (firstScore + secondScore === total) {
-                        return [toRulesThrow(first), toRulesThrow(second)];
-                    }
-
-                    if (maxDarts >= 3) {
-                        for (const third of scoredDarts) {
-                            const thirdScore = Rules.calculateScore(toRulesThrow(third));
-                            if (firstScore + secondScore + thirdScore === total) {
-                                return [toRulesThrow(first), toRulesThrow(second), toRulesThrow(third)];
-                            }
-                        }
-                    }
-                }
+    const pickSafeDart = (currentScore, currentTurnTotal, picker) => {
+        for (let attempt = 0; attempt < 12; attempt++) {
+            const dart = normalizeThrow(picker());
+            if (isSafeDart(currentScore, currentTurnTotal, dart)) {
+                return dart;
             }
         }
 
-        return null;
+        return { ...MISS };
     };
 
-    const padToRound = (throws) => {
-        const padded = [...throws];
-        while (padded.length < 3) {
-            padded.push({ ...MISS });
-        }
-        return padded.slice(0, 3);
+    const simulateTripleTarget = (profile, segment) => {
+        const skill = getSkill(profile);
+        const [left, right] = getNeighbors(segment);
+        const weights = new Map();
+
+        addWeight(weights, { segment, multiplier: 3 }, 8 + skill * 34);
+        addWeight(weights, { segment, multiplier: 1 }, 42 - skill * 9);
+        addWeight(weights, { segment: left, multiplier: 1 }, 16 - skill * 5);
+        addWeight(weights, { segment: right, multiplier: 1 }, 16 - skill * 5);
+        addWeight(weights, { segment: -1, multiplier: 1 }, 10 - skill * 6);
+        addWeight(weights, { segment, multiplier: 2 }, 2 + skill * 2);
+        addWeight(weights, { segment: left, multiplier: 3 }, 3);
+        addWeight(weights, { segment: right, multiplier: 3 }, 3);
+
+        return weightedPick(weights);
     };
 
-    const generateSafeScoringTurn = (profile, currentScore) => {
-        const maxScore = Math.min(180, currentScore - 2);
-        if (maxScore <= 0) return [{ ...MISS }, { ...MISS }, { ...MISS }];
+    const simulateDoubleTarget = (profile, segment) => {
+        const skill = getSkill(profile);
+        const [left, right] = getNeighbors(segment);
+        const weights = new Map();
+        const finishRate = clamp(profile.finishDoubleSuccessRate / 100, 0.06, 0.55);
+        const doubleHit = clamp(finishRate + skill * 0.15, 0.06, 0.72);
 
-        const deviation = clamp(profile.averageRoundScore * 0.35, 8, 35);
-        const target = clamp(Math.round(randomNormal(profile.averageRoundScore, deviation)), 0, maxScore);
+        addWeight(weights, { segment, multiplier: 2 }, doubleHit * 100);
+        addWeight(weights, { segment, multiplier: 1 }, (0.38 - skill * 0.08) * 100);
+        addWeight(weights, { segment: left, multiplier: 1 }, (0.14 - skill * 0.04) * 100);
+        addWeight(weights, { segment: right, multiplier: 1 }, (0.14 - skill * 0.04) * 100);
+        addWeight(weights, { segment: -1, multiplier: 1 }, (0.16 - skill * 0.08) * 100);
+        addWeight(weights, { segment: left, multiplier: 2 }, 3);
+        addWeight(weights, { segment: right, multiplier: 2 }, 3);
 
-        for (let score = target; score >= 0; score--) {
-            const remaining = currentScore - score;
-            if (remaining === 1 || remaining < 0) continue;
+        return weightedPick(weights);
+    };
 
-            const darts = findDartsForTotal(score, 3);
-            if (darts) {
-                return padToRound(darts);
-            }
+    const simulateSingleTarget = (profile, segment) => {
+        const skill = getSkill(profile);
+        const [left, right] = getNeighbors(segment);
+        const weights = new Map();
+
+        addWeight(weights, { segment, multiplier: 1 }, 58 + skill * 18);
+        addWeight(weights, { segment: left, multiplier: 1 }, 13 - skill * 4);
+        addWeight(weights, { segment: right, multiplier: 1 }, 13 - skill * 4);
+        addWeight(weights, { segment, multiplier: 3 }, 4 + skill * 5);
+        addWeight(weights, { segment, multiplier: 2 }, 3);
+        addWeight(weights, { segment: -1, multiplier: 1 }, 9 - skill * 5);
+
+        return weightedPick(weights);
+    };
+
+    const simulateBullTarget = (profile, target) => {
+        const skill = getSkill(profile);
+        const weights = new Map();
+
+        if (target.segment === 50 || target.segment === 0) {
+            addWeight(weights, { segment: 50, multiplier: 1 }, 10 + skill * 18);
+            addWeight(weights, { segment: 25, multiplier: 1 }, 36 + skill * 6);
+        } else {
+            addWeight(weights, { segment: 25, multiplier: 1 }, 45 + skill * 18);
+            addWeight(weights, { segment: 50, multiplier: 1 }, 6 + skill * 6);
         }
 
-        return [{ ...MISS }, { ...MISS }, { ...MISS }];
+        addWeight(weights, { segment: 20, multiplier: 1 }, 12);
+        addWeight(weights, { segment: 3, multiplier: 1 }, 8);
+        addWeight(weights, { segment: -1, multiplier: 1 }, 18 - skill * 8);
+
+        return weightedPick(weights);
+    };
+
+    const simulateTarget = (profile, target) => {
+        const normalized = normalizeThrow(target);
+
+        if (normalized.segment === 25 || normalized.segment === 50 || normalized.segment === 0) {
+            return normalizeThrow(simulateBullTarget(profile, normalized));
+        }
+
+        if (normalized.multiplier === 3) {
+            return normalizeThrow(simulateTripleTarget(profile, normalized.segment));
+        }
+
+        if (normalized.multiplier === 2) {
+            return normalizeThrow(simulateDoubleTarget(profile, normalized.segment));
+        }
+
+        return normalizeThrow(simulateSingleTarget(profile, normalized.segment));
+    };
+
+    const generateScoringTurn = (profile, currentScore) => {
+        const weights = getScoringWeights(profile);
+        const throws = [];
+        let turnTotal = 0;
+
+        for (let i = 0; i < 3; i++) {
+            const dart = pickSafeDart(currentScore, turnTotal, () => weightedPick(weights));
+            throws.push(dart);
+            turnTotal += scoreOf(dart);
+        }
+
+        return throws;
     };
 
     const shouldAttemptFinish = (profile, currentScore) => {
         if (currentScore < 2 || currentScore > 170) return false;
         if (currentScore <= profile.bestFinishingScore) return true;
+        if (currentScore <= 80) return true;
         return profile.averageRoundScore >= 60 && Math.random() < 0.35;
     };
 
-    const generateFinishAttempt = (profile, currentScore) => {
-        const finish = Finishes.selectBestFinish(currentScore, profile.preferredFinishingDouble);
-        if (!finish) return null;
+    const getSetupTarget = (currentScore, currentTurnTotal) => {
+        const remaining = currentScore - currentTurnTotal;
+        const preferredDouble = 40;
 
-        const successRate = clamp(profile.finishDoubleSuccessRate / 100, 0.05, 0.7);
-        if (Math.random() <= successRate) {
-            return finish.map(toRulesThrow);
+        if (remaining > 100) return { segment: 20, multiplier: 3 };
+        if (remaining - preferredDouble >= 2 && remaining - preferredDouble <= 60) {
+            const setupScore = remaining - preferredDouble;
+            if (setupScore <= 20) return { segment: setupScore, multiplier: 1 };
+            if (setupScore % 3 === 0 && setupScore / 3 <= 20) return { segment: setupScore / 3, multiplier: 3 };
+            if (setupScore % 2 === 0 && setupScore / 2 <= 20) return { segment: setupScore / 2, multiplier: 2 };
         }
 
-        return generateSafeScoringTurn(profile, currentScore);
+        return { segment: 20, multiplier: 1 };
+    };
+
+    const generateFinishOrSetupTurn = (profile, currentScore) => {
+        const throws = [];
+        let turnTotal = 0;
+
+        for (let i = 0; i < 3; i++) {
+            const remaining = currentScore - turnTotal;
+            if (remaining === 0) break;
+
+            const dartsLeft = 3 - i;
+            const finish = Finishes.selectBestFinish(remaining, profile.preferredFinishingDouble);
+            const canUseFinishRoute = finish && finish.length <= dartsLeft && shouldAttemptFinish(profile, remaining);
+            const target = canUseFinishRoute ? finish[0] : getSetupTarget(currentScore, turnTotal);
+
+            const dart = pickSafeDart(currentScore, turnTotal, () => simulateTarget(profile, target));
+            throws.push(dart);
+            turnTotal += scoreOf(dart);
+
+            if (currentScore - turnTotal === 0) break;
+        }
+
+        return throws.length < 3 ? throws : throws.slice(0, 3);
     };
 
     const generateTurn = (profile, currentScore) => {
-        if (shouldAttemptFinish(profile, currentScore)) {
-            const finishAttempt = generateFinishAttempt(profile, currentScore);
-            if (finishAttempt) return finishAttempt;
+        if (currentScore <= 170) {
+            return generateFinishOrSetupTurn(profile, currentScore);
         }
 
-        return generateSafeScoringTurn(profile, currentScore);
+        if (currentScore <= 230) {
+            return generateFinishOrSetupTurn(profile, currentScore);
+        }
+
+        return generateScoringTurn(profile, currentScore);
     };
 
     const playTurn = (match) => {
