@@ -161,6 +161,42 @@ const ThrowsInput = (() => {
         return Rules.formatThrow({ segment: throw_.segment, multiplier: throw_.multiplier });
     };
 
+    const clearThrowsFromIndex = (startIndex) => {
+        for (let i = startIndex; i < throwsState.length; i++) {
+            throwsState[i] = { segment: null, multiplier: 1, completed: false };
+        }
+    };
+
+    const updateLiveFinishSuggestion = () => {
+        const match = Games.getCurrentMatch();
+        const player = Games.getCurrentPlayer();
+        if (!match || !player) return;
+
+        const currentScore = match.scores[match.currentPlayerIndex];
+        const enteredThrows = throwsState.filter(t => t.segment !== null);
+        const totalScored = enteredThrows.reduce((sum, throw_) => {
+            return sum + Rules.calculateScore({
+                segment: throw_.segment,
+                multiplier: throw_.multiplier
+            });
+        }, 0);
+        const remainingScore = currentScore - totalScored;
+        const dartsRemaining = 3 - enteredThrows.length;
+
+        if (enteredThrows.length === 0) {
+            UI.updateFinishSuggestion(player.id, currentScore, 3);
+            return;
+        }
+
+        const partialValidation = Rules.validatePartialFinish(match.gameType, currentScore, enteredThrows);
+        if (!partialValidation.valid || partialValidation.finished || dartsRemaining <= 0) {
+            UI.updateFinishSuggestion(player.id, remainingScore, 0);
+            return;
+        }
+
+        UI.updateFinishSuggestion(player.id, remainingScore, dartsRemaining);
+    };
+
     /**
      * Attache les événements aux boutons
      */
@@ -219,10 +255,10 @@ const ThrowsInput = (() => {
                 e.stopPropagation();
                 const throwIndex = parseInt(e.target.dataset.editIndex);
                 if (!isNaN(throwIndex)) {
-                    throwsState[throwIndex].completed = false;
-                    throwsState[throwIndex].segment = null;  // Réinitialiser aussi le segment
-                    throwsState[throwIndex].multiplier = 1;  // Réinitialiser le multiplicateur
+                    clearThrowsFromIndex(throwIndex);
                     renderThrows();
+                    checkForPartialFinish();
+                    updateLiveFinishSuggestion();
                 }
             });
         });
@@ -251,14 +287,7 @@ const ThrowsInput = (() => {
         }
 
         // Mise à jour des suggestions
-        const match = Games.getCurrentMatch();
-        if (match) {
-            const currentScore = match.scores[match.currentPlayerIndex];
-            const player = Games.getCurrentPlayer();
-            if (player) {
-                UI.updateFinishSuggestion(player.id, currentScore);
-            }
-        }
+        updateLiveFinishSuggestion();
     };
 
     /**

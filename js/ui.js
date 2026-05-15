@@ -802,18 +802,18 @@ const UI = (() => {
     /**
      * Met à jour et affiche la suggestion de finition
      */
-    const updateFinishSuggestion = (playerId, currentScore) => {
+    const updateFinishSuggestion = (playerId, currentScore, maxDarts = 3) => {
         const suggestionEl = document.getElementById('finishSuggestion');
 
         if (!suggestionEl) return;
 
         // Score > 170 ne peut pas être fini en une volée
-        if (currentScore > 170 || currentScore < 2) {
+        if (maxDarts < 1 || currentScore > 170 || currentScore < 2) {
             suggestionEl.style.display = 'none';
             return;
         }
 
-        const suggestion = Finishes.getFinishSuggestion(currentScore, playerId);
+        const suggestion = Finishes.getFinishSuggestion(currentScore, playerId, maxDarts);
 
         if (!suggestion) {
             suggestionEl.style.display = 'none';

@@ -131,8 +131,8 @@ const Finishes = (() => {
      * 2. Sinon, minimiser le nombre de fléchettes
      * 3. Puis maximiser le score d'attaque (avant le double final)
      */
-    const selectBestFinish = (score, playerPreferredDouble) => {
-        const finishes = calculateFinishes(score);
+    const selectBestFinish = (score, playerPreferredDouble, maxDarts = 3) => {
+        const finishes = calculateFinishes(score).filter(finish => finish.length <= maxDarts);
 
         if (finishes.length === 0) {
             return null;
@@ -189,7 +189,7 @@ const Finishes = (() => {
      * - attackScore: score avant le double final
      * - finishingDouble: le double utilisé
      */
-    const getFinishSuggestion = (score, playerId) => {
+    const getFinishSuggestion = (score, playerId, maxDarts = 3) => {
         // Score > 170 ne peut pas être fini en une volée
         if (score > 170 || score < 2) {
             return null;
@@ -200,7 +200,7 @@ const Finishes = (() => {
         const preferredDouble = player && player.stats ? player.stats.preferredFinishingDouble : null;
 
         // Sélectionner la meilleure finition
-        const finish = selectBestFinish(score, preferredDouble);
+        const finish = selectBestFinish(score, preferredDouble, maxDarts);
 
         if (!finish) {
             return null;
