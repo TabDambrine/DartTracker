@@ -131,6 +131,18 @@ const App = (() => {
 
     const attachSelectPlayersScreenEvents = () => {
         const roundLimitInput = document.getElementById('roundLimitInput');
+        const ghostModeCheckbox = document.getElementById('ghostModeCheckbox');
+        const player2GhostCheckbox = document.getElementById('player2GhostCheckbox');
+
+        if (ghostModeCheckbox && player2GhostCheckbox) {
+            ghostModeCheckbox.addEventListener('change', () => {
+                player2GhostCheckbox.checked = ghostModeCheckbox.checked;
+            });
+
+            player2GhostCheckbox.addEventListener('change', () => {
+                ghostModeCheckbox.checked = player2GhostCheckbox.checked;
+            });
+        }
 
         document.querySelectorAll('.btn-game-type').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -145,17 +157,10 @@ const App = (() => {
         });
 
         document.getElementById('btnStartMatch').addEventListener('click', () => {
-            const player1Id = document.getElementById('player1Select').value;
-            const player2Id = document.getElementById('player2Select').value;
-            const ghostMode = document.getElementById('ghostModeCheckbox')?.checked === true;
+            const participants = collectMatchParticipants();
 
-            if (!player1Id) {
-                UI.showError('Veuillez selectionner le Joueur 1');
-                return;
-            }
-
-            if (!player2Id) {
-                UI.showError('Veuillez selectionner le Joueur 2');
+            if (participants.error) {
+                UI.showError(participants.error);
                 return;
             }
 
@@ -168,8 +173,8 @@ const App = (() => {
                 }
             }
 
-            const match = Games.createMatch(player1Id, player2Id, selectedGameType, roundLimit, {
-                mode: ghostMode ? 'ghost' : undefined
+            const match = Games.createMatch(null, null, selectedGameType, roundLimit, {
+                participants: participants.players
             });
             startGame(match);
         });
@@ -179,10 +184,45 @@ const App = (() => {
         });
     };
 
+    const collectMatchParticipants = () => {
+        const players = [];
+
+        for (let index = 0; index < 4; index++) {
+            const select = document.getElementById(`player${index + 1}Select`);
+            const ghostCheckbox = document.getElementById(`player${index + 1}GhostCheckbox`);
+            const playerId = select?.value || '';
+            const isGhost = ghostCheckbox?.checked === true;
+
+            if (!playerId) {
+                if (index < 2) {
+                    return { error: `Veuillez selectionner le Joueur ${index + 1}` };
+                }
+                if (isGhost) {
+                    return { error: `Veuillez selectionner un profil pour le Ghost du Joueur ${index + 1}` };
+                }
+                continue;
+            }
+
+            players.push({ playerId, isGhost });
+        }
+
+        if (players.length < 2) {
+            return { error: 'Veuillez selectionner au moins 2 joueurs' };
+        }
+
+        const humanIds = players.filter(p => !p.isGhost).map(p => p.playerId);
+        const uniqueHumanIds = new Set(humanIds);
+        const isLegacySelfPlay = players.length === 2 && humanIds.length === 2 && uniqueHumanIds.size === 1;
+
+        if (!isLegacySelfPlay && uniqueHumanIds.size !== humanIds.length) {
+            return { error: 'Un meme joueur humain ne peut pas occuper plusieurs places dans un match multi-joueurs' };
+        }
+
+        return { players };
+    };
+
     const startGame = (match) => {
-        const gameTitle = match.isGhost
-            ? `${match.gameType} - Ghost de ${match.ghostProfileName}`
-            : `${match.gameType} - ${Games.getCurrentPlayer().name}`;
+        const gameTitle = `${match.gameType} - ${match.playerIds.length} joueurs`;
         document.getElementById('gameTitle').textContent = gameTitle;
 
         UI.updateScoresBoard();
@@ -190,6 +230,7 @@ const App = (() => {
         UI.updateThrowsForm();
         UI.updateThrowsHistory();
         UI.showScreen('gameScreen');
+        playGhostTurnIfNeeded();
     };
 
     const attachGameScreenEvents = () => {
@@ -229,21 +270,25 @@ const App = (() => {
 
     const playGhostTurnIfNeeded = async () => {
         const match = Games.getCurrentMatch();
-        if (!match || !match.isGhost || match.currentPlayerIndex !== 1) {
+        if (!match || !Games.isGhostId(match.playerIds[match.currentPlayerIndex])) {
             return false;
         }
 
-        UI.setThrowsFormEnabled(false, `Ghost de ${match.ghostProfileName} joue sa volee...`);
+        while (Games.getCurrentMatch() && Games.isGhostId(Games.getCurrentMatch().playerIds[Games.getCurrentMatch().currentPlayerIndex])) {
+            const currentMatch = Games.getCurrentMatch();
+            const ghostName = Games.getGhostDisplayName(currentMatch, currentMatch.currentPlayerIndex);
+            UI.setThrowsFormEnabled(false, `${ghostName} joue sa volee...`);
 
-        await new Promise(resolve => setTimeout(resolve, 450));
+            await new Promise(resolve => setTimeout(resolve, 450));
 
-        const result = Ghost.playTurn(match);
-        UI.updateScoresBoard();
-        UI.updateThrowsHistory();
+            const result = Ghost.playTurn(currentMatch);
+            UI.updateScoresBoard();
+            UI.updateThrowsHistory();
 
-        if (result.finished) {
-            await finishMatchAndReturnHome(result);
-            return true;
+            if (result.finished) {
+                await finishMatchAndReturnHome(result);
+                return true;
+            }
         }
 
         UI.setThrowsFormEnabled(true);

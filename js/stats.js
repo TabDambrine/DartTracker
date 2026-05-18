@@ -34,12 +34,14 @@ const Stats = (() => {
     const isTrainingMatchForPlayer = (match, playerId) => {
         if (hasDeletedPlayer(match)) return false;
         if (match.isSelfPlay === true && match.playerIds.includes(playerId)) return true;
-        return isGhostMatch(match) && match.playerIds[0] === playerId;
+        return isGhostMatch(match) && match.playerIds.includes(playerId);
     };
 
     const getTrainingPlayerIndexes = (match, playerId) => {
         if (isGhostMatch(match)) {
-            return match.playerIds[0] === playerId ? [0] : [];
+            return match.playerIds
+                .map((id, index) => id === playerId ? index : -1)
+                .filter(index => index !== -1);
         }
 
         if (match.isSelfPlay === true && match.playerIds.includes(playerId)) {
@@ -307,7 +309,10 @@ const Stats = (() => {
 
         wonMatches.forEach(match => {
             if (match.isSelfPlay === true || isGhostMatch(match)) {
-                const humanThrows = match.throws.filter(t => t.isSimulated !== true);
+                const trainingIndexes = getTrainingPlayerIndexes(match, playerId);
+                const humanThrows = match.throws.filter(t =>
+                    t.isSimulated !== true && trainingIndexes.includes(t.playerIndex)
+                );
                 const lastThrow = humanThrows.length > 0 ? humanThrows[humanThrows.length - 1] : null;
                 const dart = collectLastDoubleFromThrow(lastThrow);
 

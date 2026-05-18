@@ -28,15 +28,16 @@
 
 .match-players {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
     margin-bottom: var(--spacing-md);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .match-players .player {
-    flex: 1;
+    flex: 1 1 120px;
     padding: var(--spacing-sm);
     text-align: center;
     border-radius: var(--radius-md);
@@ -52,6 +53,8 @@
 
 .match-players .vs {
     color: var(--text-secondary);
+    text-align: center;
+    font-size: 0.8rem;
 }
 
 .match-meta {
@@ -106,7 +109,7 @@
 
 .throws-detailed {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: var(--spacing-lg);
 }
 

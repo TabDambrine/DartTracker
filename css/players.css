@@ -36,17 +36,27 @@
 
 .players-selection {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--spacing-lg);
 }
 
 .selection-col {
     display: flex;
     flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 .selection-col h3 {
     font-size: 1rem;
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);
+}
+
+.optional-player {
+    opacity: 0.9;
+}
+
+.ghost-player-option {
+    margin-top: var(--spacing-xs);
+    font-size: 0.9rem;
 }

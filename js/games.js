@@ -6,14 +6,39 @@
 const Games = (() => {
     let currentMatch = null;
 
-    const getGhostDisplayName = (match) => {
-        return match.ghostProfileName ? `Ghost de ${match.ghostProfileName}` : 'Ghost';
+    const getPlayerCount = (match) => match?.playerIds?.length || 0;
+
+    const isGhostId = (playerId) => playerId === 'ghost' || String(playerId || '').startsWith('ghost:');
+
+    const getGhostId = (playerIndex) => `ghost:${playerIndex}`;
+
+    const getGhostProfile = (match, playerIndex) => {
+        if (!match) return null;
+
+        if (match.ghostProfiles && match.ghostProfiles[playerIndex]) {
+            return match.ghostProfiles[playerIndex];
+        }
+
+        if (match.playerIds[playerIndex] === 'ghost') {
+            return {
+                playerId: match.ghostProfilePlayerId,
+                name: match.ghostProfileName,
+                snapshot: match.ghostProfileSnapshot
+            };
+        }
+
+        return null;
+    };
+
+    const getGhostDisplayName = (match, playerIndex) => {
+        const profile = getGhostProfile(match, playerIndex);
+        return profile?.name ? `Ghost de ${profile.name}` : 'Ghost';
     };
 
     const getDisplayPlayer = (match, playerIndex) => {
         const playerId = match.playerIds[playerIndex];
-        if (playerId === 'ghost') {
-            return { id: 'ghost', name: getGhostDisplayName(match) };
+        if (isGhostId(playerId)) {
+            return { id: playerId, name: getGhostDisplayName(match, playerIndex) };
         }
         return Players.getById(playerId);
     };
@@ -28,23 +53,60 @@ const Games = (() => {
         };
     };
 
+    const normalizeParticipants = (player1Id, player2Id, options = {}) => {
+        if (Array.isArray(options.participants)) {
+            return options.participants.filter(p => p && p.playerId);
+        }
+
+        return [
+            { playerId: player1Id, isGhost: false },
+            { playerId: player2Id, isGhost: options.mode === 'ghost' }
+        ];
+    };
+
     const createMatch = (player1Id, player2Id, gameType, roundLimit = null, options = {}) => {
         const startScore = gameType === '501' ? 501 : 301;
-        const isSelfPlay = player1Id === player2Id;
-        const mode = options.mode || (isSelfPlay ? 'training' : 'competition');
-        const isGhost = mode === 'ghost';
-        const ghostProfilePlayer = isGhost ? Players.getById(player2Id) : null;
+        const participants = normalizeParticipants(player1Id, player2Id, options);
+        const playerIds = [];
+        const ghostProfiles = {};
+
+        participants.forEach((participant, index) => {
+            if (participant.isGhost) {
+                const ghostProfilePlayer = Players.getById(participant.playerId);
+                playerIds.push(getGhostId(index));
+                ghostProfiles[index] = {
+                    playerId: participant.playerId,
+                    name: ghostProfilePlayer ? ghostProfilePlayer.name : null,
+                    snapshot: createGhostSnapshot(ghostProfilePlayer)
+                };
+            } else {
+                playerIds.push(participant.playerId);
+            }
+        });
+
+        const ghostIndexes = playerIds
+            .map((id, index) => isGhostId(id) ? index : -1)
+            .filter(index => index !== -1);
+        const humanIds = playerIds.filter(id => !isGhostId(id));
+        const isGhost = ghostIndexes.length > 0;
+        const isSelfPlay = humanIds.length === 2 && humanIds[0] === humanIds[1] && !isGhost;
+        const mode = options.mode || (isGhost ? 'ghost' : (isSelfPlay ? 'training' : 'competition'));
+        const isTraining = isSelfPlay || isGhost;
+        const legacyGhostProfile = ghostIndexes.length === 1 ? ghostProfiles[ghostIndexes[0]] : null;
 
         const match = {
             id: Storage.generateId(),
-            playerIds: [player1Id, isGhost ? 'ghost' : player2Id],
+            playerIds,
+            participantCount: playerIds.length,
             mode,
             isSelfPlay,
-            isTraining: isSelfPlay || isGhost,
+            isTraining,
             isGhost,
-            ghostProfilePlayerId: isGhost ? player2Id : null,
-            ghostProfileName: ghostProfilePlayer ? ghostProfilePlayer.name : null,
-            ghostProfileSnapshot: createGhostSnapshot(ghostProfilePlayer),
+            ghostIndexes,
+            ghostProfiles,
+            ghostProfilePlayerId: legacyGhostProfile ? legacyGhostProfile.playerId : null,
+            ghostProfileName: legacyGhostProfile ? legacyGhostProfile.name : null,
+            ghostProfileSnapshot: legacyGhostProfile ? legacyGhostProfile.snapshot : null,
             gameType,
             roundLimit,
             currentRound: 1,
@@ -53,7 +115,7 @@ const Games = (() => {
             endDate: null,
             winner: null,
             currentPlayerIndex: 0,
-            scores: [startScore, startScore],
+            scores: playerIds.map(() => startScore),
             throws: []
         };
 
@@ -78,42 +140,43 @@ const Games = (() => {
 
     const getOtherPlayer = () => {
         if (!currentMatch) return null;
-        return getDisplayPlayer(currentMatch, 1 - currentMatch.currentPlayerIndex);
+        return getDisplayPlayer(currentMatch, (currentMatch.currentPlayerIndex + 1) % getPlayerCount(currentMatch));
+    };
+
+    const getHumanPlayerIds = (match) => Array.from(new Set(
+        match.playerIds.filter(id => !isGhostId(id) && id !== 'deleted_player')
+    ));
+
+    const updateStatsForHumanPlayers = (match) => {
+        getHumanPlayerIds(match).forEach(playerId => {
+            Stats.updatePlayerTrainingStats(playerId);
+            Stats.updatePlayerStats(playerId);
+        });
     };
 
     const updateStatsAfterFinishedMatch = (match, winnerIndex) => {
-        if (match.isGhost) {
-            Stats.updatePlayerTrainingStats(match.playerIds[0]);
-            Stats.updatePlayerStats(match.playerIds[0]);
+        if (match.isGhost || match.isSelfPlay) {
+            updateStatsForHumanPlayers(match);
             return;
         }
 
-        if (match.isSelfPlay) {
-            Stats.updatePlayerTrainingStats(match.playerIds[winnerIndex]);
-            Stats.updatePlayerStats(match.playerIds[winnerIndex]);
-            return;
-        }
-
-        Players.updateAfterMatch(match.playerIds[winnerIndex], true);
-        Players.updateAfterMatch(match.playerIds[1 - winnerIndex], false);
-        Stats.updatePlayerStats(match.playerIds[winnerIndex]);
-        Stats.updatePlayerStats(match.playerIds[1 - winnerIndex]);
+        match.playerIds.forEach((playerId, index) => {
+            if (isGhostId(playerId) || playerId === 'deleted_player') return;
+            Players.updateAfterMatch(playerId, index === winnerIndex);
+            Stats.updatePlayerStats(playerId);
+        });
     };
 
     const updateStatsAfterDNF = (match) => {
-        if (match.isGhost) {
-            Stats.updatePlayerTrainingStats(match.playerIds[0]);
-            Stats.updatePlayerStats(match.playerIds[0]);
+        if (match.isGhost || match.isSelfPlay) {
+            updateStatsForHumanPlayers(match);
             return;
         }
 
-        if (match.isSelfPlay) {
-            Stats.updatePlayerTrainingStats(match.playerIds[0]);
-            return;
-        }
-
-        Players.recordDNF(match.playerIds[0]);
-        Players.recordDNF(match.playerIds[1]);
+        match.playerIds.forEach(playerId => {
+            if (isGhostId(playerId) || playerId === 'deleted_player') return;
+            Players.recordDNF(playerId);
+        });
     };
 
     const finishAsDNF = (valid) => {
@@ -137,6 +200,18 @@ const Games = (() => {
         if (currentMatch.roundLimit && currentMatch.currentRound > currentMatch.roundLimit) {
             return finishAsDNF(valid);
         }
+        return null;
+    };
+
+    const advanceTurn = (valid) => {
+        currentMatch.currentPlayerIndex = (currentMatch.currentPlayerIndex + 1) % getPlayerCount(currentMatch);
+
+        if (currentMatch.currentPlayerIndex === 0) {
+            currentMatch.currentRound += 1;
+            const roundLimitResult = checkRoundLimit(valid);
+            if (roundLimitResult) return roundLimitResult;
+        }
+
         return null;
     };
 
@@ -195,13 +270,8 @@ const Games = (() => {
             };
         }
 
-        currentMatch.currentPlayerIndex = 1 - currentMatch.currentPlayerIndex;
-
-        if (currentMatch.currentPlayerIndex === 0) {
-            currentMatch.currentRound += 1;
-            const roundLimitResult = checkRoundLimit(true);
-            if (roundLimitResult) return roundLimitResult;
-        }
+        const roundLimitResult = advanceTurn(true);
+        if (roundLimitResult) return roundLimitResult;
 
         return {
             success: true,
@@ -246,13 +316,9 @@ const Games = (() => {
         };
 
         currentMatch.throws.push(throwRecord);
-        currentMatch.currentPlayerIndex = 1 - currentMatch.currentPlayerIndex;
 
-        if (currentMatch.currentPlayerIndex === 0) {
-            currentMatch.currentRound += 1;
-            const roundLimitResult = checkRoundLimit(false);
-            if (roundLimitResult) return roundLimitResult;
-        }
+        const roundLimitResult = advanceTurn(false);
+        if (roundLimitResult) return roundLimitResult;
 
         return {
             success: true,
@@ -309,6 +375,10 @@ const Games = (() => {
         getMatchHistory,
         getMatchById,
         getPlayerThrows,
-        getCurrentPlayerThrows
+        getCurrentPlayerThrows,
+        getPlayerCount,
+        isGhostId,
+        getGhostProfile,
+        getGhostDisplayName
     };
 })();

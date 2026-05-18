@@ -8,10 +8,11 @@ const UI = (() => {
      * Obtient le nom d'un joueur (ou "Joueur supprimé" si absent)
      */
     const getPlayerName = (playerId) => {
-        if (playerId === 'ghost') {
+        if (Games.isGhostId && Games.isGhostId(playerId)) {
             const match = Games.getCurrentMatch();
-            if (match && match.ghostProfileName) {
-                return `Ghost de ${match.ghostProfileName}`;
+            if (match) {
+                const index = match.playerIds.indexOf(playerId);
+                if (index !== -1) return Games.getGhostDisplayName(match, index);
             }
             return 'Ghost';
         }
@@ -27,10 +28,17 @@ const UI = (() => {
      */
     const getMatchPlayerName = (match, playerIndex) => {
         const playerId = match.playerIds[playerIndex];
-        if (playerId === 'ghost') {
-            return match.ghostProfileName ? `Ghost de ${match.ghostProfileName}` : 'Ghost';
+        if (Games.isGhostId && Games.isGhostId(playerId)) {
+            return Games.getGhostDisplayName(match, playerIndex);
         }
         return getPlayerName(playerId);
+    };
+
+    const getMatchWinnerName = (match) => {
+        if (!match || !match.winner) return '';
+        const winnerIndex = match.playerIds.indexOf(match.winner);
+        if (winnerIndex !== -1) return getMatchPlayerName(match, winnerIndex);
+        return getPlayerName(match.winner);
     };
 
     const showScreen = (screenId) => {
@@ -173,12 +181,14 @@ const UI = (() => {
      */
     const renderSelectPlayerOptions = () => {
         const players = Players.getAll();
-        const select1 = document.getElementById('player1Select');
-        const select2 = document.getElementById('player2Select');
+        const selects = [1, 2, 3, 4]
+            .map(index => document.getElementById(`player${index}Select`))
+            .filter(Boolean);
 
-        [select1, select2].forEach(select => {
+        selects.forEach((select, index) => {
             const currentValue = select.value;
-            select.innerHTML = '<option value="">-- Choisir --</option>' +
+            const placeholder = index < 2 ? '-- Choisir --' : '-- Optionnel --';
+            select.innerHTML = `<option value="">${placeholder}</option>` +
                 players.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
             select.value = currentValue;
         });
@@ -191,40 +201,29 @@ const UI = (() => {
         const match = Games.getCurrentMatch();
         if (!match) return;
 
-        document.getElementById('player1NameDisplay').textContent = getMatchPlayerName(match, 0);
-        document.getElementById('player1Score').textContent = match.scores[0];
-        document.getElementById('player1Throws').textContent = 
-            `${Games.getPlayerThrows(0).length} volées`;
+        const scoresBoard = document.getElementById('scoresBoard');
+        scoresBoard.style.setProperty('--player-count', match.playerIds.length);
+        scoresBoard.innerHTML = match.playerIds.map((playerId, index) => `
+            <div id="player${index + 1}ScoreBoard" class="score-player ${match.currentPlayerIndex === index ? 'active' : ''}">
+                <div class="player-name" id="player${index + 1}NameDisplay">${getMatchPlayerName(match, index)}</div>
+                <div class="player-score" id="player${index + 1}Score">${match.scores[index]}</div>
+                <div class="player-throws" id="player${index + 1}Throws">${Games.getPlayerThrows(index).length} volees</div>
+            </div>
+        `).join('');
 
-        {
-            document.getElementById('player2NameDisplay').textContent = getMatchPlayerName(match, 1);
-            document.getElementById('player2Score').textContent = match.scores[1];
-            document.getElementById('player2Throws').textContent = 
-                `${Games.getPlayerThrows(1).length} volées`;
-        }
-
-        // Afficher le tour courant et la limite
         const roundInfo = document.getElementById('roundInfo');
         if (roundInfo) {
             if (match.isDNF) {
-                roundInfo.textContent = '❌ DNF (Did Not Finish)';
+                roundInfo.textContent = 'DNF (Did Not Finish)';
             } else if (match.roundLimit) {
                 roundInfo.textContent = `Tour ${match.currentRound} / ${match.roundLimit}`;
             } else {
                 roundInfo.textContent = `Tour ${match.currentRound}`;
             }
         }
-
-        // Highlighter le joueur actuel
-        const activeClass = 'active';
-        document.getElementById('player1ScoreBoard').classList.toggle(activeClass, match.currentPlayerIndex === 0);
-        {
-            document.getElementById('player2ScoreBoard').classList.toggle(activeClass, match.currentPlayerIndex === 1);
-        }
     };
-
     /**
-     * Mets à jour le formulaire de volée
+     * Mets a jour le formulaire de volée
      */
     const updateThrowsForm = () => {
         const player = Games.getCurrentPlayer();
@@ -237,7 +236,10 @@ const UI = (() => {
             `Score actuel: ${match.scores[match.currentPlayerIndex]}`;
 
         // Afficher la suggestion de finition si le score <= 170
-        updateFinishSuggestion(player.id, match.scores[match.currentPlayerIndex]);
+        updateFinishSuggestion(
+            Games.isGhostId(player.id) ? null : player.id,
+            match.scores[match.currentPlayerIndex]
+        );
 
         // Réinitialiser les sélecteurs de fléchettes avec le nouveau composant
         resetThrowSelectors();
@@ -342,7 +344,7 @@ const UI = (() => {
 
         let html = '';
 
-        for (let playerIndex = 0; playerIndex < 2; playerIndex++) {
+        for (let playerIndex = 0; playerIndex < match.playerIds.length; playerIndex++) {
             const playerThrows = Games.getPlayerThrows(playerIndex);
             const playerName = getMatchPlayerName(match, playerIndex);
 
@@ -387,30 +389,21 @@ const UI = (() => {
         }
 
         container.innerHTML = matches.slice().reverse().map(match => {
-            const player1Name = getMatchPlayerName(match, 0);
-            const player2Name = getMatchPlayerName(match, 1);
+            const playersHtml = match.playerIds.map((playerId, index) => `
+                <span class="player ${!match.isDNF && match.winner === playerId ? 'winner' : ''}">
+                    ${getMatchPlayerName(match, index)}
+                </span>
+            `).join('<span class="vs">VS</span>');
             const date = new Date(match.startDate).toLocaleDateString('fr-FR');
-
-            // Affichage du résultat
-            let resultDisplay = '';
-            if (match.isDNF) {
-                resultDisplay = 'DNF (Did Not Finish)';
-            } else {
-                const winnerName = match.winner === 'ghost' ? getMatchPlayerName(match, 1) : getPlayerName(match.winner);
-                resultDisplay = `Gagnant: ${winnerName}`;
-            }
+            const resultDisplay = match.isDNF
+                ? 'DNF (Did Not Finish)'
+                : `Gagnant: ${getMatchWinnerName(match)}`;
 
             return `
                 <div class="match-item" data-match-id="${match.id}">
                     <div class="match-info">
                         <div class="match-players">
-                            <span class="player ${!match.isDNF && match.winner === match.playerIds[0] ? 'winner' : ''}">
-                                ${player1Name}
-                            </span>
-                            <span class="vs">VS</span>
-                            <span class="player ${!match.isDNF && match.winner === match.playerIds[1] ? 'winner' : ''}">
-                                ${player2Name}
-                            </span>
+                            ${playersHtml}
                         </div>
                         <div class="match-meta">
                             <span class="game-type">${match.gameType}</span>
@@ -422,7 +415,6 @@ const UI = (() => {
             `;
         }).join('');
 
-        // Ajouter les listeners
         container.querySelectorAll('.match-item').forEach(item => {
             item.addEventListener('click', () => {
                 const matchId = item.dataset.matchId;
@@ -430,32 +422,24 @@ const UI = (() => {
             });
         });
     };
-
     /**
      * Rend le détail d'un match
      */
     const renderMatchDetail = (matchId) => {
         const match = Games.getMatchById(matchId);
         if (!match) {
-            showError('Match non trouvé');
+            showError('Match non trouve');
             return;
         }
 
-            const player1Name = getMatchPlayerName(match, 0);
-            const player2Name = getMatchPlayerName(match, 1);
-
-        // Afficher le gagnant ou DNF
-        let resultDisplay = '';
-        if (match.isDNF) {
-            resultDisplay = 'DNF (Did Not Finish)';
-        } else {
-            resultDisplay = match.winner === 'ghost' ? getMatchPlayerName(match, 1) : getPlayerName(match.winner);
-        }
-
+        const playersTitle = match.playerIds
+            .map((playerId, index) => getMatchPlayerName(match, index))
+            .join(' VS ');
+        const resultDisplay = match.isDNF ? 'DNF (Did Not Finish)' : getMatchWinnerName(match);
         const container = document.getElementById('matchDetailContent');
 
         let throwsHtml = '';
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < match.playerIds.length; i++) {
             const throws = match.throws.filter(t => t.playerIndex === i);
             throwsHtml += `<div class="player-throws">
                 <h4>${getMatchPlayerName(match, i)}</h4>`;
@@ -464,10 +448,10 @@ const UI = (() => {
                 const throwsDisplay = t.throw.map(th => Rules.formatThrow(th)).join(' + ');
                 const rowClass = t.isValid ? '' : 'invalid-throw';
                 const simulatedBadge = t.isSimulated ? '<span class="simulated-badge">Ghost</span>' : '';
-                const invalidBadge = t.isValid ? '' : `<span class="invalid-badge" title="${t.reason}">❌</span>`;
+                const invalidBadge = t.isValid ? '' : `<span class="invalid-badge" title="${t.reason}">X</span>`;
 
                 throwsHtml += `<div class="throw-row ${rowClass}">
-                    <span class="round-num">Volée ${t.round}</span>
+                    <span class="round-num">Volee ${t.round}</span>
                     <span class="scores">${throwsDisplay}</span>
                     <span class="total">${t.roundTotal} pts</span>
                     <span class="running">${t.runningTotal}</span>
@@ -481,10 +465,10 @@ const UI = (() => {
 
         container.innerHTML = `
             <div class="match-detail">
-                <h3>${player1Name} VS ${player2Name}</h3>
+                <h3>${playersTitle}</h3>
                 <p class="game-info">
                     Jeu: ${match.gameType} | 
-                    Résultat: <strong>${resultDisplay}</strong>
+                    Resultat: <strong>${resultDisplay}</strong>
                 </p>
                 <div class="throws-detailed">
                     ${throwsHtml}
@@ -492,7 +476,6 @@ const UI = (() => {
             </div>
         `;
     };
-
     /**
      * Rend les statistiques pour le joueur sélectionné
      */

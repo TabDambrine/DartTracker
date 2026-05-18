@@ -36,6 +36,10 @@
         padding: var(--spacing-md);
     }
 
+    .players-selection {
+        grid-template-columns: 1fr;
+    }
+
     .score-player {
         padding: var(--spacing-sm);
     }
@@ -50,10 +54,6 @@
 
     .player-throws {
         font-size: 0.75rem;
-    }
-
-    .vs-separator {
-        display: none;
     }
 
     .throws-form {

@@ -282,9 +282,11 @@ const Storage = (() => {
 
         // Filtrer les matchs où les deux joueurs sont "deleted_player"
         matches = matches.filter(match => {
-            const bothDeleted = match.playerIds[0] === 'deleted_player' && 
-                                match.playerIds[1] === 'deleted_player';
-            return !bothDeleted;
+            const humanIds = match.playerIds.filter(id =>
+                id !== 'ghost' && !String(id).startsWith('ghost:')
+            );
+            const allDeleted = humanIds.length > 0 && humanIds.every(id => id === 'deleted_player');
+            return !allDeleted;
         });
 
         // Si des matchs ont été supprimés, mettre à jour

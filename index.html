@@ -102,17 +102,45 @@
                 <div class="form-group">
                     <label>Sélectionner les joueurs</label>
                     <div class="players-selection">
-                        <div class="selection-col">
+                        <div class="selection-col player-slot">
                             <h3>Joueur 1</h3>
                             <select id="player1Select" class="form-input">
                                 <option value="">-- Choisir --</option>
                             </select>
+                            <label class="checkbox-label ghost-player-option">
+                                <input id="player1GhostCheckbox" type="checkbox" class="form-checkbox player-ghost-checkbox" data-player-index="0">
+                                <span>Ghost</span>
+                            </label>
                         </div>
-                        <div class="selection-col">
+                        <div class="selection-col player-slot">
                             <h3>Joueur 2</h3>
                             <select id="player2Select" class="form-input">
                                 <option value="">-- Choisir --</option>
                             </select>
+                            <label class="checkbox-label ghost-player-option">
+                                <input id="player2GhostCheckbox" type="checkbox" class="form-checkbox player-ghost-checkbox" data-player-index="1">
+                                <span>Ghost</span>
+                            </label>
+                        </div>
+                        <div class="selection-col player-slot optional-player">
+                            <h3>Joueur 3</h3>
+                            <select id="player3Select" class="form-input">
+                                <option value="">-- Optionnel --</option>
+                            </select>
+                            <label class="checkbox-label ghost-player-option">
+                                <input id="player3GhostCheckbox" type="checkbox" class="form-checkbox player-ghost-checkbox" data-player-index="2">
+                                <span>Ghost</span>
+                            </label>
+                        </div>
+                        <div class="selection-col player-slot optional-player">
+                            <h3>Joueur 4</h3>
+                            <select id="player4Select" class="form-input">
+                                <option value="">-- Optionnel --</option>
+                            </select>
+                            <label class="checkbox-label ghost-player-option">
+                                <input id="player4GhostCheckbox" type="checkbox" class="form-checkbox player-ghost-checkbox" data-player-index="3">
+                                <span>Ghost</span>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -122,7 +150,7 @@
                         <input id="ghostModeCheckbox" type="checkbox" class="form-checkbox">
                         <span>Jouer contre le ghost du Joueur 2</span>
                     </label>
-                    <small>Le Joueur 2 sera simulé avec ses statistiques. Seules les volées humaines compteront dans l'entraînement du Joueur 1.</small>
+                    <small>Raccourci pour le mode principal a 2 joueurs. Vous pouvez aussi cocher Ghost sur chaque joueur, y compris le Joueur 1.</small>
                 </div>
 
                 <div class="form-group">
@@ -153,19 +181,7 @@
             </header>
             <main class="container game-container">
                 <!-- Scores des joueurs -->
-                <div class="scores-board">
-                    <div id="player1ScoreBoard" class="score-player">
-                        <div class="player-name" id="player1NameDisplay"></div>
-                        <div class="player-score" id="player1Score">501</div>
-                        <div class="player-throws" id="player1Throws">0 volées</div>
-                    </div>
-                    <div class="vs-separator">VS</div>
-                    <div id="player2ScoreBoard" class="score-player">
-                        <div class="player-name" id="player2NameDisplay"></div>
-                        <div class="player-score" id="player2Score">501</div>
-                        <div class="player-throws" id="player2Throws">0 volées</div>
-                    </div>
-                </div>
+                <div id="scoresBoard" class="scores-board"></div>
 
                 <!-- Formulaire d'entrée des scores avec interface mobile-friendly -->
                 <div id="throwsForm" class="throws-form">
