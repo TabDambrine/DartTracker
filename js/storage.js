@@ -60,6 +60,60 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            wins: { averageRoundScore: 0, roundsCount: 0 },
+                            losses: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     },
@@ -70,6 +124,60 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            wins: { averageRoundScore: 0, roundsCount: 0 },
+                            losses: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     }
@@ -86,6 +194,60 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            finished: { averageRoundScore: 0, roundsCount: 0 },
+                            unfinished: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     },
@@ -96,12 +258,332 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            finished: { averageRoundScore: 0, roundsCount: 0 },
+                            unfinished: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     }
                 };
                 needsUpdate = true;
             }
+
+            if (player.stats.bestRound === undefined || player.stats.highScoreRounds === undefined ||
+                player.stats.total180s === undefined || player.stats.invalidRoundRate === undefined ||
+                player.stats.topFinishes === undefined || player.stats.recentAverage === undefined ||
+                player.stats.outcomeAverages === undefined || player.stats.firstNineAverage === undefined ||
+                player.stats.checkoutAverage === undefined || player.stats.finishZoneBreakdown === undefined ||
+                player.stats.throwTypeBreakdown === undefined || player.stats.regularity === undefined ||
+                player.stats.finishZoneBustRates === undefined) {
+                player.stats.bestRound = player.stats.bestRound || null;
+                player.stats.topRounds = player.stats.topRounds || [];
+                player.stats.topFinishes = player.stats.topFinishes || [];
+                player.stats.firstNineAverage = player.stats.firstNineAverage || {
+                    averageRoundScore: 0,
+                    roundsCount: 0
+                };
+                player.stats.checkoutAverage = player.stats.checkoutAverage || {
+                    averageFinishScore: 0,
+                    finishesCount: 0
+                };
+                player.stats.finishZoneBreakdown = player.stats.finishZoneBreakdown || {
+                    zone2To40: 0,
+                    zone41To80: 0,
+                    zone81To120: 0,
+                    zone121To170: 0
+                };
+                player.stats.recentAverage = player.stats.recentAverage || {
+                    averageRoundScore: 0,
+                    roundsCount: 0,
+                    windowSize: 10
+                };
+                player.stats.outcomeAverages = player.stats.outcomeAverages || {
+                    wins: { averageRoundScore: 0, roundsCount: 0 },
+                    losses: { averageRoundScore: 0, roundsCount: 0 }
+                };
+                player.stats.throwTypeBreakdown = player.stats.throwTypeBreakdown || {
+                    singles: 0,
+                    doubles: 0,
+                    triples: 0,
+                    bulls: 0,
+                    totalDarts: 0
+                };
+                player.stats.regularity = player.stats.regularity || {
+                    standardDeviation: 0,
+                    roundsCount: 0,
+                    label: 'N/A'
+                };
+                player.stats.finishZoneBustRates = player.stats.finishZoneBustRates || {
+                    zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                };
+                player.stats.highScoreRounds = player.stats.highScoreRounds || {
+                    score100Plus: 0,
+                    score140Plus: 0,
+                    score160Plus: 0,
+                    score180: 0
+                };
+                player.stats.total180s = player.stats.total180s || 0;
+                player.stats.invalidRounds = player.stats.invalidRounds || 0;
+                player.stats.totalRoundsPlayed = player.stats.totalRoundsPlayed || 0;
+                player.stats.invalidRoundRate = player.stats.invalidRoundRate || 0;
+                needsUpdate = true;
+            }
+
+            ['301', '501'].forEach(gameType => {
+                const gameStats = player.stats.byGameType[gameType];
+                if (!gameStats) return;
+
+                if (gameStats.bestRound === undefined || gameStats.highScoreRounds === undefined ||
+                    gameStats.total180s === undefined || gameStats.invalidRoundRate === undefined ||
+                    gameStats.topFinishes === undefined || gameStats.recentAverage === undefined ||
+                    gameStats.outcomeAverages === undefined || gameStats.firstNineAverage === undefined ||
+                    gameStats.checkoutAverage === undefined || gameStats.finishZoneBreakdown === undefined ||
+                    gameStats.throwTypeBreakdown === undefined || gameStats.regularity === undefined ||
+                    gameStats.finishZoneBustRates === undefined) {
+                    gameStats.bestRound = gameStats.bestRound || null;
+                    gameStats.topRounds = gameStats.topRounds || [];
+                    gameStats.topFinishes = gameStats.topFinishes || [];
+                    gameStats.firstNineAverage = gameStats.firstNineAverage || {
+                        averageRoundScore: 0,
+                        roundsCount: 0
+                    };
+                    gameStats.checkoutAverage = gameStats.checkoutAverage || {
+                        averageFinishScore: 0,
+                        finishesCount: 0
+                    };
+                    gameStats.finishZoneBreakdown = gameStats.finishZoneBreakdown || {
+                        zone2To40: 0,
+                        zone41To80: 0,
+                        zone81To120: 0,
+                        zone121To170: 0
+                    };
+                    gameStats.recentAverage = gameStats.recentAverage || {
+                        averageRoundScore: 0,
+                        roundsCount: 0,
+                        windowSize: 10
+                    };
+                    gameStats.outcomeAverages = gameStats.outcomeAverages || {
+                        wins: { averageRoundScore: 0, roundsCount: 0 },
+                        losses: { averageRoundScore: 0, roundsCount: 0 }
+                    };
+                    gameStats.throwTypeBreakdown = gameStats.throwTypeBreakdown || {
+                        singles: 0,
+                        doubles: 0,
+                        triples: 0,
+                        bulls: 0,
+                        totalDarts: 0
+                    };
+                    gameStats.regularity = gameStats.regularity || {
+                        standardDeviation: 0,
+                        roundsCount: 0,
+                        label: 'N/A'
+                    };
+                    gameStats.finishZoneBustRates = gameStats.finishZoneBustRates || {
+                        zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                        zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                        zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                        zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                    };
+                    gameStats.highScoreRounds = gameStats.highScoreRounds || {
+                        score100Plus: 0,
+                        score140Plus: 0,
+                        score160Plus: 0,
+                        score180: 0
+                    };
+                    gameStats.total180s = gameStats.total180s || 0;
+                    gameStats.invalidRounds = gameStats.invalidRounds || 0;
+                    gameStats.totalRoundsPlayed = gameStats.totalRoundsPlayed || 0;
+                    gameStats.invalidRoundRate = gameStats.invalidRoundRate || 0;
+                    needsUpdate = true;
+                }
+            });
+
+            if (player.trainingStats.bestRound === undefined || player.trainingStats.highScoreRounds === undefined ||
+                player.trainingStats.total180s === undefined || player.trainingStats.invalidRoundRate === undefined ||
+                player.trainingStats.topFinishes === undefined || player.trainingStats.recentAverage === undefined ||
+                player.trainingStats.outcomeAverages === undefined || player.trainingStats.firstNineAverage === undefined ||
+                player.trainingStats.checkoutAverage === undefined || player.trainingStats.finishZoneBreakdown === undefined ||
+                player.trainingStats.throwTypeBreakdown === undefined || player.trainingStats.regularity === undefined ||
+                player.trainingStats.finishZoneBustRates === undefined) {
+                player.trainingStats.bestRound = player.trainingStats.bestRound || null;
+                player.trainingStats.topRounds = player.trainingStats.topRounds || [];
+                player.trainingStats.topFinishes = player.trainingStats.topFinishes || [];
+                player.trainingStats.firstNineAverage = player.trainingStats.firstNineAverage || {
+                    averageRoundScore: 0,
+                    roundsCount: 0
+                };
+                player.trainingStats.checkoutAverage = player.trainingStats.checkoutAverage || {
+                    averageFinishScore: 0,
+                    finishesCount: 0
+                };
+                player.trainingStats.finishZoneBreakdown = player.trainingStats.finishZoneBreakdown || {
+                    zone2To40: 0,
+                    zone41To80: 0,
+                    zone81To120: 0,
+                    zone121To170: 0
+                };
+                player.trainingStats.recentAverage = player.trainingStats.recentAverage || {
+                    averageRoundScore: 0,
+                    roundsCount: 0,
+                    windowSize: 10
+                };
+                player.trainingStats.outcomeAverages = player.trainingStats.outcomeAverages || {
+                    finished: { averageRoundScore: 0, roundsCount: 0 },
+                    unfinished: { averageRoundScore: 0, roundsCount: 0 }
+                };
+                player.trainingStats.throwTypeBreakdown = player.trainingStats.throwTypeBreakdown || {
+                    singles: 0,
+                    doubles: 0,
+                    triples: 0,
+                    bulls: 0,
+                    totalDarts: 0
+                };
+                player.trainingStats.regularity = player.trainingStats.regularity || {
+                    standardDeviation: 0,
+                    roundsCount: 0,
+                    label: 'N/A'
+                };
+                player.trainingStats.finishZoneBustRates = player.trainingStats.finishZoneBustRates || {
+                    zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                };
+                player.trainingStats.highScoreRounds = player.trainingStats.highScoreRounds || {
+                    score100Plus: 0,
+                    score140Plus: 0,
+                    score160Plus: 0,
+                    score180: 0
+                };
+                player.trainingStats.total180s = player.trainingStats.total180s || 0;
+                player.trainingStats.invalidRounds = player.trainingStats.invalidRounds || 0;
+                player.trainingStats.totalRoundsPlayed = player.trainingStats.totalRoundsPlayed || 0;
+                player.trainingStats.invalidRoundRate = player.trainingStats.invalidRoundRate || 0;
+                needsUpdate = true;
+            }
+
+            ['301', '501'].forEach(gameType => {
+                const gameStats = player.trainingStats.byGameType[gameType];
+                if (!gameStats) return;
+
+                if (gameStats.bestRound === undefined || gameStats.highScoreRounds === undefined ||
+                    gameStats.total180s === undefined || gameStats.invalidRoundRate === undefined ||
+                    gameStats.topFinishes === undefined || gameStats.recentAverage === undefined ||
+                    gameStats.outcomeAverages === undefined || gameStats.firstNineAverage === undefined ||
+                    gameStats.checkoutAverage === undefined || gameStats.finishZoneBreakdown === undefined ||
+                    gameStats.throwTypeBreakdown === undefined || gameStats.regularity === undefined ||
+                    gameStats.finishZoneBustRates === undefined) {
+                    gameStats.bestRound = gameStats.bestRound || null;
+                    gameStats.topRounds = gameStats.topRounds || [];
+                    gameStats.topFinishes = gameStats.topFinishes || [];
+                    gameStats.firstNineAverage = gameStats.firstNineAverage || {
+                        averageRoundScore: 0,
+                        roundsCount: 0
+                    };
+                    gameStats.checkoutAverage = gameStats.checkoutAverage || {
+                        averageFinishScore: 0,
+                        finishesCount: 0
+                    };
+                    gameStats.finishZoneBreakdown = gameStats.finishZoneBreakdown || {
+                        zone2To40: 0,
+                        zone41To80: 0,
+                        zone81To120: 0,
+                        zone121To170: 0
+                    };
+                    gameStats.recentAverage = gameStats.recentAverage || {
+                        averageRoundScore: 0,
+                        roundsCount: 0,
+                        windowSize: 10
+                    };
+                    gameStats.outcomeAverages = gameStats.outcomeAverages || {
+                        finished: { averageRoundScore: 0, roundsCount: 0 },
+                        unfinished: { averageRoundScore: 0, roundsCount: 0 }
+                    };
+                    gameStats.throwTypeBreakdown = gameStats.throwTypeBreakdown || {
+                        singles: 0,
+                        doubles: 0,
+                        triples: 0,
+                        bulls: 0,
+                        totalDarts: 0
+                    };
+                    gameStats.regularity = gameStats.regularity || {
+                        standardDeviation: 0,
+                        roundsCount: 0,
+                        label: 'N/A'
+                    };
+                    gameStats.finishZoneBustRates = gameStats.finishZoneBustRates || {
+                        zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                        zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                        zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                        zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                    };
+                    gameStats.highScoreRounds = gameStats.highScoreRounds || {
+                        score100Plus: 0,
+                        score140Plus: 0,
+                        score160Plus: 0,
+                        score180: 0
+                    };
+                    gameStats.total180s = gameStats.total180s || 0;
+                    gameStats.invalidRounds = gameStats.invalidRounds || 0;
+                    gameStats.totalRoundsPlayed = gameStats.totalRoundsPlayed || 0;
+                    gameStats.invalidRoundRate = gameStats.invalidRoundRate || 0;
+                    needsUpdate = true;
+                }
+            });
         });
 
         if (needsUpdate) {
@@ -159,6 +641,60 @@ const Storage = (() => {
                 averageRoundScore: 0,
                 finishDoubleSuccessRate: 0,
                 bestFinishingScore: 0,
+                bestRound: null,
+                topRounds: [],
+                topFinishes: [],
+                firstNineAverage: {
+                    averageRoundScore: 0,
+                    roundsCount: 0
+                },
+                checkoutAverage: {
+                    averageFinishScore: 0,
+                    finishesCount: 0
+                },
+                finishZoneBreakdown: {
+                    zone2To40: 0,
+                    zone41To80: 0,
+                    zone81To120: 0,
+                    zone121To170: 0
+                },
+                recentAverage: {
+                    averageRoundScore: 0,
+                    roundsCount: 0,
+                    windowSize: 10
+                },
+                outcomeAverages: {
+                    wins: { averageRoundScore: 0, roundsCount: 0 },
+                    losses: { averageRoundScore: 0, roundsCount: 0 }
+                },
+                throwTypeBreakdown: {
+                    singles: 0,
+                    doubles: 0,
+                    triples: 0,
+                    bulls: 0,
+                    totalDarts: 0
+                },
+                regularity: {
+                    standardDeviation: 0,
+                    roundsCount: 0,
+                    label: 'N/A'
+                },
+                finishZoneBustRates: {
+                    zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                },
+                highScoreRounds: {
+                    score100Plus: 0,
+                    score140Plus: 0,
+                    score160Plus: 0,
+                    score180: 0
+                },
+                total180s: 0,
+                invalidRounds: 0,
+                totalRoundsPlayed: 0,
+                invalidRoundRate: 0,
                 topThrows: [],
                 preferredFinishingDouble: null,
                 byGameType: {
@@ -169,6 +705,60 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            wins: { averageRoundScore: 0, roundsCount: 0 },
+                            losses: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     },
@@ -179,6 +769,60 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            wins: { averageRoundScore: 0, roundsCount: 0 },
+                            losses: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     }
@@ -192,6 +836,60 @@ const Storage = (() => {
                 averageRoundScore: 0,
                 finishDoubleSuccessRate: 0,
                 bestFinishingScore: 0,
+                bestRound: null,
+                topRounds: [],
+                topFinishes: [],
+                firstNineAverage: {
+                    averageRoundScore: 0,
+                    roundsCount: 0
+                },
+                checkoutAverage: {
+                    averageFinishScore: 0,
+                    finishesCount: 0
+                },
+                finishZoneBreakdown: {
+                    zone2To40: 0,
+                    zone41To80: 0,
+                    zone81To120: 0,
+                    zone121To170: 0
+                },
+                recentAverage: {
+                    averageRoundScore: 0,
+                    roundsCount: 0,
+                    windowSize: 10
+                },
+                outcomeAverages: {
+                    finished: { averageRoundScore: 0, roundsCount: 0 },
+                    unfinished: { averageRoundScore: 0, roundsCount: 0 }
+                },
+                throwTypeBreakdown: {
+                    singles: 0,
+                    doubles: 0,
+                    triples: 0,
+                    bulls: 0,
+                    totalDarts: 0
+                },
+                regularity: {
+                    standardDeviation: 0,
+                    roundsCount: 0,
+                    label: 'N/A'
+                },
+                finishZoneBustRates: {
+                    zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                    zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                },
+                highScoreRounds: {
+                    score100Plus: 0,
+                    score140Plus: 0,
+                    score160Plus: 0,
+                    score180: 0
+                },
+                total180s: 0,
+                invalidRounds: 0,
+                totalRoundsPlayed: 0,
+                invalidRoundRate: 0,
                 topThrows: [],
                 preferredFinishingDouble: null,
                 byGameType: {
@@ -202,6 +900,60 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            finished: { averageRoundScore: 0, roundsCount: 0 },
+                            unfinished: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     },
@@ -212,6 +964,60 @@ const Storage = (() => {
                         averageRoundScore: 0,
                         finishDoubleSuccessRate: 0,
                         bestFinishingScore: 0,
+                        bestRound: null,
+                        topRounds: [],
+                        topFinishes: [],
+                        firstNineAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0
+                        },
+                        checkoutAverage: {
+                            averageFinishScore: 0,
+                            finishesCount: 0
+                        },
+                        finishZoneBreakdown: {
+                            zone2To40: 0,
+                            zone41To80: 0,
+                            zone81To120: 0,
+                            zone121To170: 0
+                        },
+                        recentAverage: {
+                            averageRoundScore: 0,
+                            roundsCount: 0,
+                            windowSize: 10
+                        },
+                        outcomeAverages: {
+                            finished: { averageRoundScore: 0, roundsCount: 0 },
+                            unfinished: { averageRoundScore: 0, roundsCount: 0 }
+                        },
+                        throwTypeBreakdown: {
+                            singles: 0,
+                            doubles: 0,
+                            triples: 0,
+                            bulls: 0,
+                            totalDarts: 0
+                        },
+                        regularity: {
+                            standardDeviation: 0,
+                            roundsCount: 0,
+                            label: 'N/A'
+                        },
+                        finishZoneBustRates: {
+                            zone2To40: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone41To80: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone81To120: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 },
+                            zone121To170: { attempts: 0, invalidRounds: 0, invalidRoundRate: 0 }
+                        },
+                        highScoreRounds: {
+                            score100Plus: 0,
+                            score140Plus: 0,
+                            score160Plus: 0,
+                            score180: 0
+                        },
+                        total180s: 0,
+                        invalidRounds: 0,
+                        totalRoundsPlayed: 0,
+                        invalidRoundRate: 0,
                         topThrows: [],
                         preferredFinishingDouble: null
                     }

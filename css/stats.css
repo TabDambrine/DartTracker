@@ -60,6 +60,37 @@
     margin-bottom: var(--spacing-md);
 }
 
+.stat {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    min-height: 82px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.stat-subvalue {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
 /* Sections de détails */
 .stats-section {
     margin-bottom: var(--spacing-md);
@@ -138,6 +169,301 @@
     text-align: right;
     color: var(--text-secondary);
     font-size: 0.75rem;
+}
+
+.top-rounds {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.round-stat {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+}
+
+.round-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.round-name {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.round-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.round-score {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.round-highlight {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, #2d3436 0%, #0984e3 100%);
+}
+
+.round-highlight-score {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+}
+
+.round-highlight-throws {
+    text-align: center;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.recent-average-highlight {
+    background: linear-gradient(135deg, #1f4037 0%, #2c7744 100%);
+}
+
+.checkout-average-highlight {
+    background: linear-gradient(135deg, #4a2c2a 0%, #c46b13 100%);
+}
+
+.score-breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+}
+
+.score-breakdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+}
+
+.score-breakdown-item.highlight {
+    border-color: #f1c40f;
+    background: linear-gradient(135deg, rgba(241, 196, 15, 0.14) 0%, rgba(243, 156, 18, 0.18) 100%);
+}
+
+.score-band-label {
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.score-band-value {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.score-band-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.detailed-breakdown .score-breakdown-item {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2px;
+}
+
+.chart-block {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.stats-chart-svg {
+    width: 100%;
+    height: auto;
+    display: block;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    box-sizing: border-box;
+}
+
+.chart-caption {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.chart-summary-inline {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.chart-bar-track {
+    fill: rgba(148, 163, 184, 0.22);
+}
+
+.chart-axis-label {
+    fill: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.chart-value-label {
+    fill: var(--text-primary);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.chart-badge {
+    fill: rgba(255, 255, 255, 0.9);
+    stroke: rgba(15, 23, 42, 0.14);
+    stroke-width: 1;
+}
+
+.chart-badge-max {
+    fill: rgba(255, 140, 66, 0.92);
+}
+
+.chart-badge-min {
+    fill: rgba(45, 140, 255, 0.9);
+}
+
+.chart-badge-last {
+    fill: rgba(34, 139, 94, 0.92);
+}
+
+.chart-badge-label {
+    fill: white;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.chart-grid-line {
+    stroke: rgba(148, 163, 184, 0.28);
+    stroke-width: 1;
+}
+
+.chart-point {
+    fill: #ff8c42;
+    stroke: white;
+    stroke-width: 2;
+}
+
+.heatmap-block .stats-chart-svg {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.03) 0%, rgba(15, 23, 42, 0.08) 100%);
+}
+
+.heatmap-board-outline {
+    fill: none;
+    stroke: rgba(15, 23, 42, 0.16);
+    stroke-width: 2;
+}
+
+.heatmap-segment {
+    stroke: rgba(15, 23, 42, 0.24);
+    stroke-width: 1;
+}
+
+.heatmap-label {
+    fill: var(--text-primary);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.heatmap-center-label {
+    fill: var(--text-primary);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.chart-meta-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-sm);
+}
+
+.chart-meta-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.chart-meta-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--spacing-sm);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.7) 0%, rgba(241, 245, 249, 0.9) 100%);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    text-align: center;
+}
+
+.chart-meta-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.chart-meta-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.chart-meta-value.compact {
+    font-size: 0.88rem;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+}
+
+.comparison-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--spacing-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.comparison-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.comparison-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.comparison-meta {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
 }
 
 /* Preferred Double */

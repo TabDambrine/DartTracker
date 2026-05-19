@@ -45,6 +45,7 @@ const App = (() => {
         });
 
         document.getElementById('btnStats').addEventListener('click', () => {
+            Stats.recalculateAllStats();
             UI.renderStats();
             UI.showScreen('statsScreen');
         });
