@@ -139,21 +139,21 @@ const Ghost = (() => {
     };
 
     const getSkill = (profile) => {
-        return clamp((profile.averageRoundScore - 25) / 70, 0, 1);
+        return clamp((profile.averageRoundScore - 30) / 90, 0, 1);
     };
 
     const getDefaultT20Weights = (profile) => {
         const skill = getSkill(profile);
         const weights = new Map();
 
-        addWeight(weights, { segment: 20, multiplier: 3 }, 5 + skill * 32);
-        addWeight(weights, { segment: 20, multiplier: 1 }, 34 - skill * 6);
-        addWeight(weights, { segment: 1, multiplier: 1 }, 18 - skill * 7);
-        addWeight(weights, { segment: 5, multiplier: 1 }, 18 - skill * 7);
-        addWeight(weights, { segment: -1, multiplier: 1 }, 13 - skill * 8);
-        addWeight(weights, { segment: 20, multiplier: 2 }, 2 + skill * 3);
-        addWeight(weights, { segment: 1, multiplier: 3 }, 3);
-        addWeight(weights, { segment: 5, multiplier: 3 }, 3);
+        addWeight(weights, { segment: 20, multiplier: 3 }, 4 + skill * 24);
+        addWeight(weights, { segment: 20, multiplier: 1 }, 31 - skill * 4);
+        addWeight(weights, { segment: 1, multiplier: 1 }, 20 - skill * 5);
+        addWeight(weights, { segment: 5, multiplier: 1 }, 20 - skill * 5);
+        addWeight(weights, { segment: -1, multiplier: 1 }, 16 - skill * 7);
+        addWeight(weights, { segment: 20, multiplier: 2 }, 1 + skill * 2);
+        addWeight(weights, { segment: 1, multiplier: 3 }, 2);
+        addWeight(weights, { segment: 5, multiplier: 3 }, 2);
         addWeight(weights, { segment: 18, multiplier: 1 }, 2);
         addWeight(weights, { segment: 12, multiplier: 1 }, 2);
 
@@ -165,7 +165,7 @@ const Ghost = (() => {
 
         if (profile.historicalScoringDarts >= 45) {
             profile.historicalScoringWeights.forEach((weight, key) => {
-                weights.set(key, (weights.get(key) || 0) + weight * 1.8);
+                weights.set(key, (weights.get(key) || 0) + weight);
             });
         }
 
@@ -195,14 +195,14 @@ const Ghost = (() => {
         const [left, right] = getNeighbors(segment);
         const weights = new Map();
 
-        addWeight(weights, { segment, multiplier: 3 }, 8 + skill * 34);
-        addWeight(weights, { segment, multiplier: 1 }, 42 - skill * 9);
-        addWeight(weights, { segment: left, multiplier: 1 }, 16 - skill * 5);
-        addWeight(weights, { segment: right, multiplier: 1 }, 16 - skill * 5);
-        addWeight(weights, { segment: -1, multiplier: 1 }, 10 - skill * 6);
-        addWeight(weights, { segment, multiplier: 2 }, 2 + skill * 2);
-        addWeight(weights, { segment: left, multiplier: 3 }, 3);
-        addWeight(weights, { segment: right, multiplier: 3 }, 3);
+        addWeight(weights, { segment, multiplier: 3 }, 6 + skill * 28);
+        addWeight(weights, { segment, multiplier: 1 }, 40 - skill * 7);
+        addWeight(weights, { segment: left, multiplier: 1 }, 18 - skill * 4);
+        addWeight(weights, { segment: right, multiplier: 1 }, 18 - skill * 4);
+        addWeight(weights, { segment: -1, multiplier: 1 }, 12 - skill * 5);
+        addWeight(weights, { segment, multiplier: 2 }, 1 + skill * 2);
+        addWeight(weights, { segment: left, multiplier: 3 }, 2);
+        addWeight(weights, { segment: right, multiplier: 3 }, 2);
 
         return weightedPick(weights);
     };
@@ -212,13 +212,13 @@ const Ghost = (() => {
         const [left, right] = getNeighbors(segment);
         const weights = new Map();
         const finishRate = clamp(profile.finishDoubleSuccessRate / 100, 0.06, 0.55);
-        const doubleHit = clamp(finishRate + skill * 0.15, 0.06, 0.72);
+        const doubleHit = clamp((finishRate * 0.65) + skill * 0.08, 0.04, 0.45);
 
         addWeight(weights, { segment, multiplier: 2 }, doubleHit * 100);
-        addWeight(weights, { segment, multiplier: 1 }, (0.38 - skill * 0.08) * 100);
-        addWeight(weights, { segment: left, multiplier: 1 }, (0.14 - skill * 0.04) * 100);
-        addWeight(weights, { segment: right, multiplier: 1 }, (0.14 - skill * 0.04) * 100);
-        addWeight(weights, { segment: -1, multiplier: 1 }, (0.16 - skill * 0.08) * 100);
+        addWeight(weights, { segment, multiplier: 1 }, (0.42 - skill * 0.06) * 100);
+        addWeight(weights, { segment: left, multiplier: 1 }, (0.16 - skill * 0.03) * 100);
+        addWeight(weights, { segment: right, multiplier: 1 }, (0.16 - skill * 0.03) * 100);
+        addWeight(weights, { segment: -1, multiplier: 1 }, (0.20 - skill * 0.08) * 100);
         addWeight(weights, { segment: left, multiplier: 2 }, 3);
         addWeight(weights, { segment: right, multiplier: 2 }, 3);
 
@@ -293,9 +293,10 @@ const Ghost = (() => {
 
     const shouldAttemptFinish = (profile, currentScore) => {
         if (currentScore < 2 || currentScore > 170) return false;
-        if (currentScore <= profile.bestFinishingScore) return true;
-        if (currentScore <= 80) return true;
-        return profile.averageRoundScore >= 60 && Math.random() < 0.35;
+        if (currentScore <= 40) return true;
+        if (currentScore <= profile.bestFinishingScore) return Math.random() < 0.85;
+        if (currentScore <= 80) return Math.random() < 0.55;
+        return profile.averageRoundScore >= 60 && Math.random() < 0.25;
     };
 
     const getSetupTarget = (currentScore, currentTurnTotal) => {
@@ -349,8 +350,10 @@ const Ghost = (() => {
     };
 
     const playTurn = (match) => {
-        const profile = buildProfile(match.ghostProfilePlayerId, match.gameType);
-        const currentScore = match.scores[1];
+        const playerIndex = match.currentPlayerIndex;
+        const ghostProfile = Games.getGhostProfile(match, playerIndex);
+        const profile = buildProfile(ghostProfile?.playerId || match.ghostProfilePlayerId, match.gameType);
+        const currentScore = match.scores[playerIndex];
         const throws = generateTurn(profile, currentScore);
         return Games.addSimulatedThrow(throws, {
             profileName: profile.name
