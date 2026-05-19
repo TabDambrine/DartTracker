@@ -3,7 +3,7 @@
  * Pour supporter l'offline, la mise en cache et le rechargement automatique
  */
 
-const CACHE_NAME = 'dart-stats-v2.1.0';
+const CACHE_NAME = 'dart-stats-v2.2.0';
 const ASSETS = [
     '/',
     '/index.html',
